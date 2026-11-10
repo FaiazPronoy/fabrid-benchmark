@@ -504,7 +504,7 @@ def run_metrics(run, model, arm, paths, scored, dropped, estimates, extra) -> di
     }
 
 
-def evaluate_run(run: dict, records, locked, sessions, config: dict, roots, out_dir: Path):
+def evaluate_run(run: dict, records, locked, sessions, config: dict, roots):
     model, arm = run_identity(run)
     predictions_path = find_file(run["predictions"], roots)
     split_rel = run.get("split", f"results/baselines/{run['name']}/split.csv")
@@ -659,15 +659,15 @@ def main() -> None:
     print(f"indexed {len(records)} images from {records[0].path.parents[2]}")
     locked = session_split(records, config["gap_seconds"])
     sessions = assign_sessions(records, config["gap_seconds"])
-    out_dir = runio.start_run(config["step"], "", config)
     results, skipped = [], []
     for run in config["runs"]:
-        result = evaluate_run(run, records, locked, sessions, config, roots, out_dir)
+        result = evaluate_run(run, records, locked, sessions, config, roots)
         if result is None:
             skipped.append(run["name"])
         else:
             results.append(result)
-    leak_rows = leakage(results)
+    base = runio.repo_root() / "results" / config["step"]
+    written = [base / result["run"] for result in results]
     header = [
         "model",
         "session_run",
@@ -679,11 +679,19 @@ def main() -> None:
         "high",
         "inflation_claimed",
     ]
-    write_csv(out_dir / "leakage.csv", header, leak_rows)
-    (out_dir / "summary.md").write_text(summary_text(results, skipped, leak_rows), encoding="utf-8")
-    print(f"evaluated {len(results)} runs, skipped {len(skipped)}, wrote {out_dir}")
+    for model in sorted({r["model"] for r in results if r["model"]}):
+        group = [r for r in results if r["model"] == model]
+        missing = [name for name in skipped if name.startswith(f"{model}_")]
+        model_dir = runio.start_run(config["step"], f"summary_{model}", config)
+        leak_rows = leakage(group)
+        write_csv(model_dir / "leakage.csv", header, leak_rows)
+        text = summary_text(group, missing, leak_rows)
+        (model_dir / "summary.md").write_text(text, encoding="utf-8")
+        written.append(model_dir)
+    print(f"evaluated {len(results)} runs, skipped {len(skipped)}, wrote under {base}")
     if config.get("publish", True):
-        runio.publish(out_dir)
+        for path in written:
+            runio.publish(path)
 
 
 if __name__ == "__main__":
