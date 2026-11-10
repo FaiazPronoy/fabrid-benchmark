@@ -79,3 +79,7 @@ claimed for a model only if the difference is positive and the interval excludes
 each.
 
 ## Notes
+- 2026-11-10, before any prediction file was scored: output layout only. The shared
+  `results/evaluation/leakage.csv` and `summary.md` are written per model instead, as
+  `results/evaluation/summary_<model>/leakage.csv` and `summary.md`, so that runs evaluated from
+  different accounts never write the same file. Metrics, intervals and rules are unchanged.
