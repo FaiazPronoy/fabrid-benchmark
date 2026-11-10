@@ -16,6 +16,7 @@ writes small citable results with their exact config to `results/`. Data is read
 5. Geometry study: `python -m fabrid.geometry --config configs/geometry.yaml`
 6. Similarity audit of the export, random and session splits: `python -m fabrid.similarity --config configs/similarity.yaml`
 
-On Kaggle, open `kaggle/run.ipynb`, set `JOB` to a name from `kaggle/jobs.csv`, and add the
+On Kaggle, import the notebook of the job from `kaggle/notebooks/` (one per row of
+`kaggle/jobs.csv`, rebuilt with `python kaggle/notebooks.py`), attach the dataset, and add the
 secrets `GITHUB_TOKEN`, `GIT_USER_NAME`, `GIT_USER_EMAIL` and `REPO_URL` so finished runs are
 committed back. Locally: `pip install -e ".[dev]"`, then `pytest` and `ruff check`.

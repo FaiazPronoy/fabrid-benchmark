@@ -1,0 +1,16 @@
+step: audit
+name: triage
+mode: sheets
+gap_seconds: 30
+weights: baselines/yolov8m_session_seed0/train/weights/best.pt
+roots: [/kaggle/working/runs, /kaggle/input]
+conf: 0.05
+imgsz: 640
+batch: 16
+device: 0
+seed: 0
+per_sheet: 12
+columns: 4
+tile: 320
+form: null
+publish: true

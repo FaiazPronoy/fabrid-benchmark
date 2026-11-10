@@ -11,3 +11,4 @@ hybrid_anchors_mssa,gpu,python -m fabrid.hybrid --config configs/hybrid_anchors_
 hybrid_anchors_mssa_aux,gpu,python -m fabrid.hybrid --config configs/hybrid_anchors_mssa_aux.yaml
 hybrid_anchors_mssa_aux_preprocess,gpu,python -m fabrid.hybrid --config configs/hybrid_anchors_mssa_aux_preprocess.yaml
 evaluate,cpu,python -m fabrid.evaluate --config configs/evaluate.yaml
+triage,gpu,python -m fabrid.triage --config configs/triage.yaml
