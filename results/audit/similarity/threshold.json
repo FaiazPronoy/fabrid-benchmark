@@ -1,0 +1,11 @@
+{
+  "threshold": 0.6336237192153931,
+  "percentile": 5,
+  "pair_seconds": 3,
+  "pairs": 448,
+  "pair_similarity_min": 0.2556014657020569,
+  "pair_similarity_median": 0.8186407089233398,
+  "pair_similarity_max": 0.9841897487640381,
+  "pool": "session split train and val",
+  "pool_images": 2031
+}
