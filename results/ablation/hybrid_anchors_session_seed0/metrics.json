@@ -1,0 +1,115 @@
+{
+  "model": "hybrid_anchors",
+  "arm": "session",
+  "seed": 0,
+  "split": "val",
+  "endpoint": "val mask AP50 at the best epoch by val mask AP50",
+  "best_epoch": 15,
+  "val_mask_AP50": 0.18215832919748495,
+  "epochs_run": 40,
+  "n_train": 1672,
+  "n_val": 359,
+  "instances": {
+    "train": {
+      "images": 1672,
+      "kept": 1752,
+      "dropped_under_1px": 0
+    },
+    "val": {
+      "images": 359,
+      "kept": 376,
+      "dropped_under_1px": 0
+    }
+  },
+  "box": {
+    "overall": {
+      "AP50": 0.2261934203916814,
+      "AP50-95": 0.07824885834631078,
+      "AR100": 0.22357390873015875
+    },
+    "per_class": {
+      "needle mark": {
+        "AP50": 0.21849918905013105,
+        "AP50-95": 0.07905579954098141,
+        "AR100": 0.20520833333333335
+      },
+      "hole": {
+        "AP50": 0.35954797963509166,
+        "AP50-95": 0.13218271967693404,
+        "AR100": 0.3154761904761904
+      },
+      "missing yarn": {
+        "AP50": 0.14452052148202582,
+        "AP50-95": 0.037428434832558484,
+        "AR100": 0.2125
+      },
+      "stain": {
+        "AP50": 0.1822059913994769,
+        "AP50-95": 0.06432847933476918,
+        "AR100": 0.1611111111111111
+      }
+    }
+  },
+  "mask": {
+    "overall": {
+      "AP50": 0.18215832919748495,
+      "AP50-95": 0.05846589584882808,
+      "AR100": 0.16862937409812412
+    },
+    "per_class": {
+      "needle mark": {
+        "AP50": 0.14834941239063368,
+        "AP50-95": 0.03759742873589748,
+        "AR100": 0.11979166666666667
+      },
+      "hole": {
+        "AP50": 0.40071315500056154,
+        "AP50-95": 0.1394286238932099,
+        "AR100": 0.33452380952380956
+      },
+      "missing yarn": {
+        "AP50": 0.060002813481627885,
+        "AP50-95": 0.01387415653928844,
+        "AR100": 0.08409090909090908
+      },
+      "stain": {
+        "AP50": 0.11956793591711684,
+        "AP50-95": 0.04296337422691649,
+        "AR100": 0.13611111111111113
+      }
+    }
+  },
+  "predictions": "/kaggle/working/runs/ablation/hybrid_anchors_session_seed0/val_predictions.json",
+  "ground_truth": "/kaggle/working/runs/ablation/hybrid_anchors_session_seed0/val_ground_truth.json",
+  "weights": "/kaggle/working/runs/ablation/hybrid_anchors_session_seed0/checkpoints/best.pth",
+  "components": {
+    "anchors": true,
+    "mssa": false,
+    "aux": false,
+    "preprocess": false
+  },
+  "parameters": {
+    "total": 43953961,
+    "trainable": 43731561,
+    "inference": 43953961,
+    "parts": {
+      "backbone_fpn": 26799296,
+      "mssa": 0,
+      "rpn": 609355,
+      "roi_heads": 16545310,
+      "aux": 0
+    }
+  },
+  "parameters_parent": {
+    "total": 43938541,
+    "trainable": 43716141,
+    "inference": 43938541,
+    "parts": {
+      "backbone_fpn": 26799296,
+      "mssa": 0,
+      "rpn": 593935,
+      "roi_heads": 16545310,
+      "aux": 0
+    }
+  }
+}
