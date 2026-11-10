@@ -1,0 +1,22 @@
+step: baselines
+model: yolov8m
+tag: aug
+weights: yolov8m-seg.pt
+arms: [session]
+seed: 0
+gap_seconds: 30
+imgsz: 640
+batch: 16
+epochs: 100
+patience: 20
+workers: 4
+device: 0
+hours_limit: 10.5
+train_args:
+  degrees: 15
+  scale: 0.5
+  hsv_v: 0.6
+  hsv_s: 0.8
+  flipud: 0.5
+  copy_paste: 0.5
+publish: true

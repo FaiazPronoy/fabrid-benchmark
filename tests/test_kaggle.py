@@ -18,8 +18,9 @@ def test_every_job_names_an_existing_module_and_config():
         assert parts[:2] == ["python", "-m"]
         module = ROOT / "src" / Path(*parts[2].split(".")).with_suffix(".py")
         assert module.is_file(), module
-        config = ROOT / parts[parts.index("--config") + 1]
-        assert config.is_file(), config
+        if "--config" in parts:
+            config = ROOT / parts[parts.index("--config") + 1]
+            assert config.is_file(), config
         assert job["device"] in ("cpu", "gpu")
 
 

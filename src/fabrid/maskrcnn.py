@@ -54,9 +54,10 @@ def flip(pixels: np.ndarray, target: dict, horizontal: bool, vertical: bool):
 
 
 class Samples:
-    def __init__(self, records, flips=(0.0, 0.0), seed: int = 0, prepare=None):
+    def __init__(self, records, flips=(0.0, 0.0), seed: int = 0, prepare=None, transform=None):
         self.records = records
         self.prepare = prepare
+        self.transform = transform
         self.flips = flips
         self.seed = seed
         self.epoch = 0
@@ -71,6 +72,8 @@ class Samples:
         if self.prepare is not None:
             pixels = self.prepare(pixels)
         target, _ = build_target(record.polygons, *pixels.shape[:2])
+        if self.transform is not None:
+            pixels, target = self.transform(pixels, target, record, self.epoch)
         if any(self.flips):
             rng = np.random.default_rng([self.seed, self.epoch, index])
             horizontal, vertical = (rng.random() < p for p in self.flips)
@@ -434,6 +437,7 @@ def train(
     run_dir: Path,
     builder=None,
     prepare=None,
+    transform=None,
 ):
     import torch
     from torch.utils.data import DataLoader
@@ -461,7 +465,7 @@ def train(
     optimizer = make_optimizer(model, config)
     scaler = torch.amp.GradScaler(device.type, enabled=amp)
     flips = (config["hflip"], config["vflip"])
-    train_data = Samples(train_records, flips, config["seed"], prepare)
+    train_data = Samples(train_records, flips, config["seed"], prepare, transform)
     steps = math.ceil(len(train_data) / config["batch"])
     warmup, total = config["warmup_epochs"] * steps, config["epochs"] * steps
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda s: lr_factor(s, warmup, total))
@@ -551,14 +555,14 @@ def finalize(
         "predictions": str(runs / "val_predictions.json"),
         "ground_truth": str(runs / "val_ground_truth.json"),
         "weights": str(runs / "checkpoints" / "best.pth"),
-        **(extra or {}),
+        **(extra(state) if callable(extra) else extra or {}),
     }
     write_json(run_dir / "metrics.json", summary)
     write_csv(run_dir / "split.csv", ["name", "split"], sorted(mapping.items()))
     return summary
 
 
-def run(config: dict, builder=None, extra=None, prepare=None) -> None:
+def run(config: dict, builder=None, extra=None, prepare=None, transform=None) -> None:
     deadline = Deadline(config["hours_limit"])
     name = f"{config['model']}_{config['arm']}_seed{config['seed']}"
     done = runio.repo_root() / "results" / config["step"] / name / "metrics.json"
@@ -578,7 +582,7 @@ def run(config: dict, builder=None, extra=None, prepare=None) -> None:
         )
     run_dir = runio.start_run(config["step"], name, config)
     status, state = train(
-        config, name, train_records, val_records, deadline, run_dir, builder, prepare
+        config, name, train_records, val_records, deadline, run_dir, builder, prepare, transform
     )
     if status == "paused":
         print(f"{name}: paused, checkpoint in {runio.runs_dir(config['step'], name)}")

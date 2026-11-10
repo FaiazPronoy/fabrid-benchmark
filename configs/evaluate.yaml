@@ -17,4 +17,44 @@ runs:
     predictions: baselines/yolo11m_random_seed0/val_predictions.json
   - name: maskrcnn_r50_session_seed0
     predictions: baselines/maskrcnn_r50_session_seed0/val_predictions.json
+  - name: yolov8m_aug_session_seed0
+  - name: hybrid_anchors_session_seed0
+    step: ablation
+  - name: hybrid_anchors_mssa_session_seed0
+    step: ablation
+  - name: hybrid_anchors_mssa_aux_session_seed0
+    step: ablation
+  - name: hybrid_anchors_mssa_aux_preprocess_session_seed0
+    step: ablation
+  - name: maskrcnn_r50_aug_session_seed0
+    step: generalization
+  - name: maskrcnn_r50_paste_session_seed0
+    step: generalization
+  - name: maskrcnn_r50_aug_paste_session_seed0
+    step: generalization
+comparisons:
+  - name: anchors
+    baseline: maskrcnn_r50_session_seed0
+    candidate: hybrid_anchors_session_seed0
+  - name: mssa
+    baseline: hybrid_anchors_session_seed0
+    candidate: hybrid_anchors_mssa_session_seed0
+  - name: aux
+    baseline: hybrid_anchors_mssa_session_seed0
+    candidate: hybrid_anchors_mssa_aux_session_seed0
+  - name: preprocess
+    baseline: hybrid_anchors_mssa_aux_session_seed0
+    candidate: hybrid_anchors_mssa_aux_preprocess_session_seed0
+  - name: aug
+    baseline: yolov8m_session_seed0
+    candidate: yolov8m_aug_session_seed0
+  - name: maskrcnn_aug
+    baseline: maskrcnn_r50_session_seed0
+    candidate: maskrcnn_r50_aug_session_seed0
+  - name: maskrcnn_paste
+    baseline: maskrcnn_r50_session_seed0
+    candidate: maskrcnn_r50_paste_session_seed0
+  - name: maskrcnn_aug_paste
+    baseline: maskrcnn_r50_session_seed0
+    candidate: maskrcnn_r50_aug_paste_session_seed0
 publish: true

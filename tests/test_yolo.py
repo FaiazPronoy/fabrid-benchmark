@@ -1,5 +1,6 @@
 import csv
 from collections import Counter
+from pathlib import Path
 
 import pytest
 import yaml
@@ -115,3 +116,40 @@ def test_ground_truth_uses_val_only(tmp_path):
     assert annotation["category_id"] == 3
     assert annotation["bbox"] == [0.0, 0.0, 16.0, 16.0]
     assert annotation["area"] == pytest.approx(128.0)
+
+
+def test_train_args_allow_list():
+    config = {"train_args": {"degrees": 15, "copy_paste": 0.5, "flipud": 0.5}}
+    assert yolo.train_overrides(config) == config["train_args"]
+    assert yolo.train_overrides({}) == {}
+    assert yolo.train_overrides({"train_args": None}) == {}
+    for key in ("epochs", "mosaic", "lr0", "data"):
+        with pytest.raises(ValueError, match=key):
+            yolo.train_overrides({"train_args": {"degrees": 1, key: 1}})
+
+
+def test_run_name_with_and_without_tag():
+    config = {"model": "yolov8m", "seed": 0}
+    assert yolo.run_name(config, "session") == "yolov8m_session_seed0"
+    assert yolo.run_name({**config, "tag": "aug"}, "session") == "yolov8m_aug_session_seed0"
+    assert yolo.run_name({**config, "tag": None, "seed": 2}, "random") == "yolov8m_random_seed2"
+
+
+def test_aug_config_matches_base_except_augmentation():
+    configs = Path(__file__).resolve().parents[1] / "configs"
+    base = yaml.safe_load((configs / "yolov8m_seg.yaml").read_text(encoding="utf-8"))
+    aug = yaml.safe_load((configs / "yolov8m_seg_aug.yaml").read_text(encoding="utf-8"))
+    changed = ("tag", "arms", "train_args")
+    assert {k: v for k, v in aug.items() if k not in changed} == {
+        k: v for k, v in base.items() if k != "arms"
+    }
+    assert aug["arms"] == ["session"]
+    assert yolo.run_name(aug, "session") == "yolov8m_aug_session_seed0"
+    assert yolo.train_overrides(aug) == {
+        "degrees": 15,
+        "scale": 0.5,
+        "hsv_v": 0.6,
+        "hsv_s": 0.8,
+        "flipud": 0.5,
+        "copy_paste": 0.5,
+    }

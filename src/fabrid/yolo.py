@@ -15,6 +15,20 @@ from fabrid.labels import CLASSES, load_index, polygon_area
 from fabrid.sessions import assign_sessions, check_disjoint, session_split
 
 ARMS = ("session", "random")
+TRAIN_ARGS = (
+    "degrees",
+    "translate",
+    "scale",
+    "shear",
+    "hsv_h",
+    "hsv_s",
+    "hsv_v",
+    "flipud",
+    "fliplr",
+    "mixup",
+    "copy_paste",
+    "erasing",
+)
 INPUT_ROOT = Path("/kaggle/input")
 CURVE_PREFIXES = ("train/", "metrics/", "val/")
 FITNESS_KEYS = (
@@ -34,6 +48,19 @@ class Deadline:
 
     def passed(self, now: float | None = None) -> bool:
         return (now if now is not None else time.time()) - self.start >= self.limit
+
+
+def train_overrides(config: dict) -> dict:
+    overrides = dict(config.get("train_args") or {})
+    unknown = sorted(set(overrides) - set(TRAIN_ARGS))
+    if unknown:
+        raise ValueError(f"train_args not allowed: {unknown}, allowed: {list(TRAIN_ARGS)}")
+    return overrides
+
+
+def run_name(config: dict, arm: str) -> str:
+    tag = f"_{config['tag']}" if config.get("tag") else ""
+    return f"{config['model']}{tag}_{arm}_seed{config['seed']}"
 
 
 def assert_unlocked(mapping: dict[str, str], locked: dict[str, str]) -> None:
@@ -242,6 +269,7 @@ def train(config: dict, name: str, data_yaml: Path, deadline: Deadline) -> str:
             project=str(runs),
             name="train",
             exist_ok=True,
+            **train_overrides(config),
         )
     if state["paused"]:
         return "paused"
@@ -357,11 +385,14 @@ def main() -> None:
     parser.add_argument("--config", required=True)
     args = parser.parse_args()
     config = runio.load_config(args.config)
+    overrides = train_overrides(config)
+    if overrides:
+        print(f"train_args passed to Ultralytics: {overrides}")
     deadline = Deadline(config["hours_limit"])
     records = load_index()
     print(f"indexed {len(records)} images from {records[0].path.parents[2]}")
     for arm in config["arms"]:
-        name = f"{config['model']}_{arm}_seed{config['seed']}"
+        name = run_name(config, arm)
         done = runio.repo_root() / "results" / config["step"] / name / "metrics.json"
         if done.is_file():
             print(f"{name}: already complete at {done}, skipping")

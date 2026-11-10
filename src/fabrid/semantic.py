@@ -1,11 +1,17 @@
 import argparse
+import csv
 import math
+import os
 import shutil
 import time
 from pathlib import Path
 
 import numpy as np
+import torch
+import torch.nn.functional as F
 from PIL import Image
+from torch import nn
+from torch.utils.data import DataLoader
 
 from fabrid import runio
 from fabrid.geometry import rasterize
@@ -18,8 +24,8 @@ from fabrid.maskrcnn import (
     split_records,
     write_json,
 )
-from fabrid.sessions import session_split
-from fabrid.yolo import Deadline, arm_mapping, write_csv
+from fabrid.sessions import assign_sessions, session_split
+from fabrid.yolo import Deadline, arm_mapping, assert_unlocked, write_csv
 
 INPUT_ROOT = Path("/kaggle/input")
 IGNORE = 255
@@ -27,6 +33,7 @@ N_CLASSES = len(CLASSES) + 1
 MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 MAPS_NAME = "val_maps.npz"
+RESAMPLES = 2000
 
 
 def build_target(polygons, height: int, width: int) -> tuple[np.ndarray, int]:
@@ -81,8 +88,6 @@ class Samples:
         return pad(normalize(pixels), target, self.size)
 
     def __getitem__(self, index: int):
-        import torch
-
         pixels, target = self.load(index)
         image = torch.from_numpy(np.ascontiguousarray(pixels.transpose(2, 0, 1)))
         return image, torch.from_numpy(np.ascontiguousarray(target)).long(), index
@@ -145,12 +150,10 @@ def is_alarm(pred: np.ndarray, target: np.ndarray, min_pixels: int) -> bool:
 
 
 def dice_loss(logits, target, smooth: float = 1.0):
-    import torch
-
     probs = torch.softmax(logits.float(), dim=1)
     valid = (target != IGNORE).unsqueeze(1)
     labels = torch.where(target == IGNORE, torch.zeros_like(target), target)
-    onehot = torch.nn.functional.one_hot(labels, N_CLASSES).permute(0, 3, 1, 2).float()
+    onehot = F.one_hot(labels, N_CLASSES).permute(0, 3, 1, 2).float()
     probs, onehot = probs * valid, onehot * valid
     dims = (0, 2, 3)
     inter = (probs * onehot).sum(dims)[1:]
@@ -158,16 +161,50 @@ def dice_loss(logits, target, smooth: float = 1.0):
     return 1 - ((2 * inter + smooth) / (denom + smooth)).mean()
 
 
-def upsampled_logits(model, images):
-    import torch
-
-    logits = model(pixel_values=images).logits
-    return torch.nn.functional.interpolate(
-        logits, size=images.shape[-2:], mode="bilinear", align_corners=False
+def conv_bn_relu(inputs: int, outputs: int) -> nn.Sequential:
+    return nn.Sequential(
+        nn.Conv2d(inputs, outputs, 3, padding=1, bias=False),
+        nn.BatchNorm2d(outputs),
+        nn.ReLU(inplace=True),
     )
 
 
-def build_model(config: dict):
+class FrozenHead(nn.Module):
+    def __init__(self, backbone, layers: int = 4, channels: int = 256):
+        super().__init__()
+        self.backbone = backbone
+        self.layers = layers
+        self.patch = backbone.patch_embed.patch_size[0]
+        for parameter in self.backbone.parameters():
+            parameter.requires_grad_(False)
+        self.backbone.eval()
+        self.project = nn.Conv2d(layers * backbone.embed_dim, channels, 1)
+        self.blocks = nn.Sequential(
+            conv_bn_relu(channels, channels), conv_bn_relu(channels, channels)
+        )
+        self.classifier = nn.Conv2d(channels, N_CLASSES, 1)
+
+    def train(self, mode: bool = True):
+        super().train(mode)
+        self.backbone.eval()
+        return self
+
+    def forward(self, images):
+        height, width = images.shape[-2:]
+        extra_h, extra_w = -height % self.patch, -width % self.patch
+        padded = F.pad(images, (0, extra_w, 0, extra_h))
+        with torch.no_grad():
+            tokens = self.backbone.get_intermediate_layers(
+                padded, n=self.layers, reshape=True, norm=True
+            )
+        features = self.blocks(self.project(torch.cat(tokens, dim=1)))
+        features = F.interpolate(
+            features, size=padded.shape[-2:], mode="bilinear", align_corners=False
+        )
+        return self.classifier(features[..., :height, :width])
+
+
+def build_segformer(config: dict):
     from transformers import SegformerForSemanticSegmentation
 
     names = ("background", *CLASSES)
@@ -180,20 +217,42 @@ def build_model(config: dict):
     )
 
 
-def make_optimizer(model, config: dict):
-    import torch
+def build_dinov2(config: dict):
+    import timm
 
-    return torch.optim.AdamW(
-        model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"]
+    backbone = timm.create_model(
+        config["weights"],
+        pretrained=True,
+        img_size=config["imgsz"],
+        dynamic_img_size=True,
+        num_classes=0,
     )
+    return FrozenHead(backbone, config["layers"], config["head_channels"])
+
+
+BUILDERS = {"segformer_b0": build_segformer, "dinov2_s14": build_dinov2}
+
+
+def build_model(config: dict):
+    return BUILDERS[config["model"]](config)
+
+
+def upsampled_logits(model, images):
+    if isinstance(model, FrozenHead):
+        return model(images)
+    logits = model(pixel_values=images).logits
+    return F.interpolate(logits, size=images.shape[-2:], mode="bilinear", align_corners=False)
+
+
+def make_optimizer(model, config: dict):
+    trainable = [parameter for parameter in model.parameters() if parameter.requires_grad]
+    return torch.optim.AdamW(trainable, lr=config["lr"], weight_decay=config["weight_decay"])
 
 
 def train_step(model, optimizer, scaler, images, targets, config: dict, amp: bool):
-    import torch
-
     with torch.autocast(images.device.type, enabled=amp):
         logits = upsampled_logits(model, images)
-    ce = torch.nn.functional.cross_entropy(logits.float(), targets, ignore_index=IGNORE)
+    ce = F.cross_entropy(logits.float(), targets, ignore_index=IGNORE)
     dice = dice_loss(logits, targets)
     loss = ce + config["dice_weight"] * dice
     if not torch.isfinite(loss):
@@ -206,15 +265,11 @@ def train_step(model, optimizer, scaler, images, targets, config: dict, amp: boo
 
 
 def stack(data: Samples, indices, device):
-    import torch
-
     images, targets, _ = zip(*(data[i] for i in indices), strict=True)
     return torch.stack(images).to(device), torch.stack(targets).to(device)
 
 
 def overfit_check(config: dict, train_records, device, amp: bool) -> dict:
-    import torch
-
     settings = config["sanity"]
     seed_everything(config["seed"])
     picks = [record for record in train_records if record.polygons][: settings["images"]]
@@ -244,8 +299,6 @@ def overfit_check(config: dict, train_records, device, amp: bool) -> dict:
 
 
 def empty_check(config: dict, train_records, device, amp: bool) -> dict:
-    import torch
-
     empty = [record for record in train_records if not record.polygons][:2]
     result = {"images": [record.name for record in empty]}
     if not empty:
@@ -255,7 +308,7 @@ def empty_check(config: dict, train_records, device, amp: bool) -> dict:
     model = build_model(config).to(device).train()
     with torch.autocast(device.type, enabled=amp):
         logits = upsampled_logits(model, images)
-    loss = torch.nn.functional.cross_entropy(logits.float(), targets, ignore_index=IGNORE)
+    loss = F.cross_entropy(logits.float(), targets, ignore_index=IGNORE)
     loss = loss + config["dice_weight"] * dice_loss(logits, targets)
     loss.backward()
     result.update(loss=loss.item(), passed=bool(torch.isfinite(loss)))
@@ -263,8 +316,6 @@ def empty_check(config: dict, train_records, device, amp: bool) -> dict:
 
 
 def sanity_checks(config: dict, train_records, device, amp: bool) -> dict:
-    import torch
-
     overfit = overfit_check(config, train_records, device, amp)
     torch.cuda.empty_cache()
     empty = empty_check(config, train_records, device, amp)
@@ -277,8 +328,6 @@ def sanity_checks(config: dict, train_records, device, amp: bool) -> dict:
 
 
 def evaluate(model, loader, records, device, amp: bool, min_pixels: int) -> tuple[dict, dict]:
-    import torch
-
     model.eval()
     counts = np.zeros((N_CLASSES, 3), dtype=np.int64)
     alarms, clean, maps = 0, 0, {}
@@ -330,9 +379,6 @@ def adopt(source: Path, runs: Path) -> None:
 
 
 def train(config: dict, name: str, train_records, val_records, deadline, run_dir: Path):
-    import torch
-    from torch.utils.data import DataLoader
-
     cuda = torch.cuda.is_available()
     device = torch.device(config["device"] if cuda else "cpu")
     if not cuda:
@@ -444,10 +490,188 @@ def finalize(config: dict, name: str, state: dict, mapping, overlaps, run_dir: P
     return summary
 
 
+def resampled_mean_dice(pooled: np.ndarray) -> np.ndarray:
+    tp, fp, fn = pooled[:, 1:, 0], pooled[:, 1:, 1], pooled[:, 1:, 2]
+    denom = 2 * tp + fp + fn
+    dice = np.divide(2 * tp, denom, out=np.full(denom.shape, np.nan), where=denom > 0)
+    defined = np.isfinite(dice)
+    totals = np.where(defined, dice, 0).sum(axis=1)
+    return np.divide(
+        totals, defined.sum(axis=1), out=np.full(len(dice), np.nan), where=defined.any(axis=1)
+    )
+
+
+def compare_maps(maps_a, maps_b, targets, sessions, resamples: int = RESAMPLES, seed: int = 0):
+    names = sorted(targets)
+    for label, maps in (("first", maps_a), ("second", maps_b)):
+        if set(maps) != set(names):
+            raise ValueError(f"{label} run does not cover exactly the validation images")
+        for name in names:
+            if maps[name].shape != targets[name].shape:
+                raise ValueError(f"{label} run map for {name} has the wrong size")
+    counts_a = np.stack([confusion(maps_a[n], targets[n]) for n in names])
+    counts_b = np.stack([confusion(maps_b[n], targets[n]) for n in names])
+    _, labels = np.unique([sessions[n] for n in names], return_inverse=True)
+    n_sessions = labels.max() + 1
+    sums_a = np.zeros((n_sessions, N_CLASSES, 3))
+    sums_b = np.zeros((n_sessions, N_CLASSES, 3))
+    np.add.at(sums_a, labels, counts_a)
+    np.add.at(sums_b, labels, counts_b)
+    rng = np.random.default_rng(seed)
+    draws = rng.integers(0, n_sessions, size=(resamples, n_sessions))
+    weights = np.zeros((resamples, n_sessions))
+    np.add.at(weights, (np.arange(resamples)[:, None], draws), 1)
+    mean_a = resampled_mean_dice(np.einsum("rs,sck->rck", weights, sums_a))
+    mean_b = resampled_mean_dice(np.einsum("rs,sck->rck", weights, sums_b))
+    usable = np.isfinite(mean_a) & np.isfinite(mean_b)
+    differences = (mean_b - mean_a)[usable]
+    first, second = class_scores(counts_a.sum(axis=0)), class_scores(counts_b.sum(axis=0))
+    point_a, point_b = mean_dice(first), mean_dice(second)
+    if point_a is None or point_b is None or not usable.any():
+        raise ValueError("mean Dice is undefined for one of the runs")
+    low, high = (float(v) for v in np.percentile(differences, [2.5, 97.5]))
+    difference = point_b - point_a
+    return {
+        "images": len(names),
+        "sessions": int(n_sessions),
+        "resamples": resamples,
+        "resamples_used": int(usable.sum()),
+        "seed": seed,
+        "first": {"mean_dice": point_a, "per_class": first},
+        "second": {"mean_dice": point_b, "per_class": second},
+        "difference": difference,
+        "low": low,
+        "high": high,
+        "second_higher": bool(difference > 0 and low > 0),
+    }
+
+
+def find_maps(name: str) -> Path:
+    runs = Path(os.environ.get("FABRID_RUNS", runio.DEFAULT_RUNS))
+    candidates = [runs / "baselines" / name / MAPS_NAME]
+    if INPUT_ROOT.is_dir():
+        candidates += sorted(INPUT_ROOT.glob(f"**/baselines/{name}/{MAPS_NAME}"))
+    for path in candidates:
+        if path.is_file():
+            return path
+    raise FileNotFoundError(f"no {MAPS_NAME} for {name} under {runs} or {INPUT_ROOT}")
+
+
+def read_split(name: str) -> dict[str, str]:
+    path = runio.repo_root() / "results" / "baselines" / name / "split.csv"
+    with path.open(newline="", encoding="utf-8") as handle:
+        return {row["name"]: row["split"] for row in csv.DictReader(handle)}
+
+
+def load_maps(path: Path) -> dict[str, np.ndarray]:
+    with np.load(path, allow_pickle=False) as data:
+        return {name: data[name] for name in data.files}
+
+
+def compare_summary(first: str, second: str, result: dict) -> str:
+    verdict = "higher" if result["second_higher"] else "not shown to be higher"
+    lines = [
+        f"# {second} against {first}",
+        "",
+        f"- Validation images: {result['images']} in {result['sessions']} sessions",
+        f"- Mean Dice over the 4 defect classes: {first} {result['first']['mean_dice']:.4f}, "
+        f"{second} {result['second']['mean_dice']:.4f}",
+        f"- Difference, {second} minus {first}: {result['difference']:.4f}, 95% session "
+        f"bootstrap interval {result['low']:.4f} to {result['high']:.4f} "
+        f"({result['resamples_used']} of {result['resamples']} resamples usable)",
+        f"- Rule: {second} is {verdict} on this seed. No claim is made before seeds 1 and 2 "
+        "also meet the rule.",
+        "",
+        "| Class | Dice first | Dice second | IoU first | IoU second |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for name in CLASSES:
+        a, b = result["first"]["per_class"][name], result["second"]["per_class"][name]
+        cells = [a["dice"], b["dice"], a["iou"], b["iou"]]
+        shown = " | ".join("" if v is None else f"{v:.4f}" for v in cells)
+        lines.append(f"| {name} | {shown} |")
+    return "\n".join(lines) + "\n"
+
+
+def run_compare(first: str, second: str, gap_seconds: float = 30) -> Path:
+    records = load_index()
+    print(f"indexed {len(records)} images from {records[0].path.parents[2]}")
+    locked = session_split(records, gap_seconds)
+    splits = {name: read_split(name) for name in (first, second)}
+    for mapping in splits.values():
+        assert_unlocked(mapping, locked)
+    val = [{n for n, s in splits[name].items() if s == "val"} for name in (first, second)]
+    if val[0] != val[1]:
+        raise ValueError(f"{first} and {second} were validated on different images")
+    paths = {name: find_maps(name) for name in (first, second)}
+    maps = {name: load_maps(path) for name, path in paths.items()}
+    targets = {}
+    for record in records:
+        if record.name in val[0]:
+            with Image.open(record.path) as image:
+                height, width = image.height, image.width
+            targets[record.name] = build_target(record.polygons, height, width)[0]
+    sessions = assign_sessions(records, gap_seconds)
+    result = compare_maps(maps[first], maps[second], targets, sessions)
+    config = {
+        "first": first,
+        "second": second,
+        "class_maps": {name: str(path) for name, path in paths.items()},
+        "gap_seconds": gap_seconds,
+        "resamples": RESAMPLES,
+        "seed": 0,
+    }
+    out_dir = runio.start_run("evaluation", f"compare_semantic_{first}_vs_{second}", config)
+    write_json(out_dir / "comparison.json", {"first": first, "second": second, **result})
+    rows = []
+    for name in CLASSES:
+        a, b = result["first"]["per_class"][name], result["second"]["per_class"][name]
+        rows.append(
+            [
+                name,
+                a["dice"],
+                b["dice"],
+                a["iou"],
+                b["iou"],
+                a["precision"],
+                b["precision"],
+                a["recall"],
+                b["recall"],
+            ]
+        )
+    write_csv(
+        out_dir / "per_class.csv",
+        [
+            "class",
+            "dice_first",
+            "dice_second",
+            "iou_first",
+            "iou_second",
+            "precision_first",
+            "precision_second",
+            "recall_first",
+            "recall_second",
+        ],
+        [["" if v is None else v for v in row] for row in rows],
+    )
+    (out_dir / "summary.md").write_text(compare_summary(first, second, result), encoding="utf-8")
+    print(
+        f"{second} minus {first}: {result['difference']:.4f} "
+        f"[{result['low']:.4f}, {result['high']:.4f}], second higher: {result['second_higher']}"
+    )
+    print(f"wrote {out_dir}")
+    return out_dir
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", required=True)
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--config")
+    group.add_argument("--compare", nargs=2, metavar=("FIRST", "SECOND"))
     args = parser.parse_args()
+    if args.compare:
+        runio.publish(run_compare(*args.compare))
+        return
     config = runio.load_config(args.config)
     deadline = Deadline(config["hours_limit"])
     name = f"{config['model']}_{config['arm']}_seed{config['seed']}"

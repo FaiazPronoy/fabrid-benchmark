@@ -12,3 +12,9 @@ hybrid_anchors_mssa_aux,gpu,python -m fabrid.hybrid --config configs/hybrid_anch
 hybrid_anchors_mssa_aux_preprocess,gpu,python -m fabrid.hybrid --config configs/hybrid_anchors_mssa_aux_preprocess.yaml
 evaluate,cpu,python -m fabrid.evaluate --config configs/evaluate.yaml
 triage,gpu,python -m fabrid.triage --config configs/triage.yaml
+yolov8m_aug,gpu,python -m fabrid.yolo --config configs/yolov8m_seg_aug.yaml
+maskrcnn_aug,gpu,python -m fabrid.augment --config configs/maskrcnn_r50_aug.yaml
+maskrcnn_paste,gpu,python -m fabrid.augment --config configs/maskrcnn_r50_paste.yaml
+maskrcnn_aug_paste,gpu,python -m fabrid.augment --config configs/maskrcnn_r50_aug_paste.yaml
+dinov2,gpu,python -m fabrid.semantic --config configs/dinov2_s14.yaml
+semantic_compare,cpu,python -m fabrid.semantic --compare segformer_b0_session_seed0 dinov2_s14_session_seed0

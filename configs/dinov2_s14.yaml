@@ -1,0 +1,27 @@
+step: baselines
+model: dinov2_s14
+weights: vit_small_patch14_dinov2.lvd142m
+arm: session
+seed: 0
+gap_seconds: 30
+imgsz: 644
+layers: 4
+head_channels: 256
+batch: 8
+epochs: 60
+warmup_epochs: 2
+lr: 0.001
+weight_decay: 0.01
+amp: true
+hflip: 0.5
+vflip: 0.5
+dice_weight: 1.0
+alarm_pixels: 20
+workers: 2
+device: cuda
+hours_limit: 10.5
+sanity:
+  images: 8
+  iterations: 150
+  ratio: 0.5
+publish: true

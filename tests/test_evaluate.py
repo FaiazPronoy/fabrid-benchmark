@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 import pytest
 
@@ -171,7 +173,7 @@ def test_prediction_outside_train_and_val_rejected(tmp_path):
     predictions = [{"image_id": names[1].rsplit(".", 1)[0]}, {"file_name": names[0]}]
     resolved = evaluate.resolve(predictions, lookup, {})
     evaluate.guard(resolved, mapping, locked)
-    stray = evaluate.resolve([{"image_id": 7}], lookup, {7: names[2]})
+    stray = evaluate.resolve([{"image_id": 7}], lookup, {"7": names[2]})
     with pytest.raises(AssertionError):
         evaluate.guard(stray, mapping, locked)
     with pytest.raises(AssertionError):
@@ -194,3 +196,126 @@ def test_leakage_claims_only_when_interval_excludes_zero():
     unclear = evaluate.leakage([run("session", 0.5, flat), run("random", 0.6, noisy)])
     assert unclear[0][-1] is False
     assert evaluate.leakage([run("session", 0.5, flat)]) == []
+
+
+def hand_scored(tp: np.ndarray, scores: np.ndarray) -> evaluate.Scored:
+    n = len(tp)
+    image = np.arange(n)
+    zeros = np.zeros(n, dtype=int)
+    return evaluate.Scored(
+        pred_image=image,
+        pred_class=zeros,
+        pred_score=scores,
+        pred_order=zeros,
+        pred_tp=tp,
+        pred_tp_tolerant=tp,
+        pred_bucket=zeros,
+        pred_matched_bucket=np.where(tp, 0, -1),
+        gt_image=image,
+        gt_class=zeros,
+        gt_bucket=zeros,
+        gt_matched=tp,
+        gt_cldice=np.full(n, np.nan),
+        n_images=n,
+    )
+
+
+def test_paired_interval_narrower_than_unpaired():
+    rng = np.random.default_rng(11)
+    n = 80
+    scores = rng.random(n)
+    base_tp = rng.random(n) < 0.6
+    cand_tp = base_tp.copy()
+    cand_tp[np.flatnonzero(~base_tp)[:4]] = True
+    baseline = evaluate.Scorer(hand_scored(base_tp, scores))
+    candidate = evaluate.Scorer(hand_scored(cand_tp, scores))
+    sessions = np.repeat(np.arange(n // 2), 2)
+    shared = evaluate.draws(sessions, 500, 0, "pair")
+    table = evaluate.paired(baseline, candidate, shared)
+    entry = table["ap50"]
+    assert entry["difference"] > 0
+    first = evaluate.draws(sessions, 500, 0, "first")
+    second = evaluate.draws(sessions, 500, 0, "second")
+    a = np.array([baseline.evaluate(w)["ap50"] for w in first])
+    b = np.array([candidate.evaluate(w)["ap50"] for w in second])
+    low, high = np.percentile(b - a, [2.5, 97.5])
+    assert entry["high"] - entry["low"] < (high - low) / 3
+    again = evaluate.paired(baseline, candidate, shared)
+    assert again == table
+    assert set(table) == {
+        f"{m}{s}"
+        for m in ("ap50", "tolerant_ap50")
+        for s in ("", "/needle mark", "/hole", "/missing yarn", "/stain")
+    }
+
+
+def test_differing_validation_sets_raise():
+    scorer = evaluate.Scorer(hand_scored(np.array([True, False]), np.array([0.9, 0.5])))
+    run = {"scorer": scorer, "val_names": ["a", "b"], "sessions": np.array([0, 1])}
+    found = {"x": run, "y": {**run, "val_names": ["a", "c"]}}
+    config = {"resamples": 20, "seed": 0}
+    with pytest.raises(ValueError, match="differ"):
+        evaluate.compare({"name": "t", "baseline": "x", "candidate": "y"}, found, config)
+    result = evaluate.compare({"name": "t", "baseline": "x", "candidate": "x"}, found, config)
+    assert result["mask_ap50"]["mean"]["difference"] == 0
+    assert result["verdict"] == "not shown"
+    rows = evaluate.comparison_rows(result)
+    assert len(rows) == 2 * 5
+    assert rows[0][:2] == ["mask_ap50", "mean"]
+
+
+def test_verdict_logic():
+    assert evaluate.verdict(0.05, 0.01, 0.09) == "higher"
+    assert evaluate.verdict(-0.05, -0.09, -0.01) == "lower"
+    assert evaluate.verdict(0.05, -0.01, 0.09) == "not shown"
+    assert evaluate.verdict(-0.05, -0.09, 0.01) == "not shown"
+    assert evaluate.verdict(0.05, 0.0, 0.09) == "not shown"
+    assert evaluate.verdict(None, 0.01, 0.09) == "not shown"
+    assert evaluate.verdict(0.05, None, None) == "not shown"
+
+
+def test_string_image_ids_from_ground_truth_file(tmp_path):
+    name = "IMG_20260501_090000_jpg.rf.a.jpg"
+    stem = name.rsplit(".", 1)[0]
+    truth = {"images": [{"id": stem, "file_name": name}, {"id": 4, "file_name": "other.jpg"}]}
+    (tmp_path / "val_ground_truth.json").write_text(json.dumps(truth), encoding="utf-8")
+    ids = evaluate.image_ids(tmp_path / "val_predictions.json")
+    lookup = {name: name, stem: name, "other.jpg": "other.jpg"}
+    resolved = evaluate.resolve([{"image_id": stem}, {"image_id": 4}], lookup, ids)
+    assert resolved == [name, "other.jpg"]
+
+
+def test_stored_scores_round_trip_and_guards(tmp_path):
+    items = [
+        ("train", "IMG_20260501_090000_jpg.rf.a.jpg", [SQUARE], 1),
+        ("train", "IMG_20260502_090000_jpg.rf.b.jpg", [SQUARE, SQUARE], 2),
+    ]
+    records, names = scored_set(tmp_path, items)
+    hit = gt_mask(records[0])
+    predictions = [
+        prediction(names[0], 0, 0.9, hit),
+        prediction(names[1], 0, 0.123456789, np.roll(hit, 12, axis=1)),
+    ]
+    scored, _ = score(records, predictions, names)
+    run_dir = tmp_path / "evaluation" / "demo"
+    run_dir.mkdir(parents=True)
+    evaluate.save_scored(run_dir, scored, names)
+    loaded, loaded_names = evaluate.load_scored(run_dir)
+    assert loaded_names == names
+    ones = np.ones(len(names))
+    first = evaluate.Scorer(scored).evaluate(ones)
+    second = evaluate.Scorer(loaded).evaluate(ones)
+    assert first.keys() == second.keys()
+    for key, value in first.items():
+        assert value == second[key] or (np.isnan(value) and np.isnan(second[key]))
+    run = {"name": "demo"}
+    base = tmp_path / "evaluation"
+    locked = {names[0]: "val", names[1]: "val"}
+    assert evaluate.cached_run(run, None, locked, base) is None
+    (run_dir / "metrics.json").write_text("{}", encoding="utf-8")
+    assert evaluate.cached_run(run, None, locked, base) is not None
+    with pytest.raises(AssertionError):
+        evaluate.cached_run(run, None, {**locked, names[1]: "test"}, base)
+    with pytest.raises(ValueError):
+        evaluate.cached_run(run, {names[0]: "val", names[1]: "train"}, locked, base)
+    assert evaluate.load_scored(tmp_path) is None
