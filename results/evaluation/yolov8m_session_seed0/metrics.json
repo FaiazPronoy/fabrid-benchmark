@@ -1,0 +1,278 @@
+{
+  "run": "yolov8m_session_seed0",
+  "model": "yolov8m",
+  "arm": "session",
+  "predictions": "/kaggle/input/notebooks/faiazabrarzaman/yolov8m-ismam/runs/baselines/yolov8m_session_seed0/val_predictions.json",
+  "split_csv": "/kaggle/working/fabrid-benchmark/results/baselines/yolov8m_session_seed0/split.csv",
+  "n_val_images": 359,
+  "n_val_sessions": 33,
+  "n_predictions_scored": 32205,
+  "n_predictions_train_dropped": 0,
+  "gt_instances": {
+    "needle mark": 96,
+    "hole": 84,
+    "missing yarn": 88,
+    "stain": 108
+  },
+  "resamples": 1000,
+  "seed": 0,
+  "gt_without_pixels": 0,
+  "primary": {
+    "metric": "mask AP50",
+    "value": 0.159504,
+    "low": 0.094342,
+    "high": 0.238822
+  },
+  "mask_ap50": {
+    "mean": {
+      "value": 0.159504,
+      "low": 0.094342,
+      "high": 0.238822
+    },
+    "per_class": {
+      "needle mark": {
+        "value": 0.067263,
+        "low": 0.011029,
+        "high": 0.141843
+      },
+      "hole": {
+        "value": 0.319384,
+        "low": 0.146263,
+        "high": 0.54828
+      },
+      "missing yarn": {
+        "value": 0.115782,
+        "low": 0.038074,
+        "high": 0.188622
+      },
+      "stain": {
+        "value": 0.135586,
+        "low": 0.003286,
+        "high": 0.274039
+      }
+    }
+  },
+  "tolerant_ap50": {
+    "mean": {
+      "value": 0.20603,
+      "low": 0.132999,
+      "high": 0.286269
+    },
+    "per_class": {
+      "needle mark": {
+        "value": 0.077846,
+        "low": 0.01624,
+        "high": 0.15688
+      },
+      "hole": {
+        "value": 0.395322,
+        "low": 0.205912,
+        "high": 0.612519
+      },
+      "missing yarn": {
+        "value": 0.179993,
+        "low": 0.071448,
+        "high": 0.246342
+      },
+      "stain": {
+        "value": 0.170961,
+        "low": 0.004716,
+        "high": 0.335151
+      }
+    }
+  },
+  "f1_operating_point": {
+    "needle mark": {
+      "threshold": {
+        "value": 0.14532,
+        "low": 0.07351,
+        "high": 0.16669
+      },
+      "precision": {
+        "value": 0.2,
+        "low": 0.049972,
+        "high": 0.268671
+      },
+      "recall": {
+        "value": 0.197917,
+        "low": 0.097561,
+        "high": 0.336276
+      },
+      "f1": {
+        "value": 0.198953,
+        "low": 0.069718,
+        "high": 0.285768
+      }
+    },
+    "hole": {
+      "threshold": {
+        "value": 0.13236,
+        "low": 0.11137,
+        "high": 0.31366
+      },
+      "precision": {
+        "value": 0.406977,
+        "low": 0.236111,
+        "high": 0.790556
+      },
+      "recall": {
+        "value": 0.416667,
+        "low": 0.25,
+        "high": 0.545455
+      },
+      "f1": {
+        "value": 0.411765,
+        "low": 0.267403,
+        "high": 0.618227
+      }
+    },
+    "missing yarn": {
+      "threshold": {
+        "value": 0.14051,
+        "low": 0.12287,
+        "high": 0.219796
+      },
+      "precision": {
+        "value": 0.164474,
+        "low": 0.106912,
+        "high": 0.312582
+      },
+      "recall": {
+        "value": 0.284091,
+        "low": 0.111111,
+        "high": 0.384633
+      },
+      "f1": {
+        "value": 0.208333,
+        "low": 0.127643,
+        "high": 0.285768
+      }
+    },
+    "stain": {
+      "threshold": {
+        "value": 0.53257,
+        "low": 0.06008,
+        "high": 0.66844
+      },
+      "precision": {
+        "value": 0.441176,
+        "low": 0.022715,
+        "high": 0.535714
+      },
+      "recall": {
+        "value": 0.138889,
+        "low": 0.033898,
+        "high": 0.330267
+      },
+      "f1": {
+        "value": 0.211268,
+        "low": 0.029829,
+        "high": 0.370094
+      }
+    }
+  },
+  "size_ap50": {
+    "small": {
+      "mean": {
+        "value": 0.131748,
+        "low": 0.049079,
+        "high": 0.251882
+      },
+      "per_class": {
+        "needle mark": {
+          "value": 0.00013,
+          "low": 0.0,
+          "high": 0.000893
+        },
+        "hole": {
+          "value": 0.486429,
+          "low": 0.145285,
+          "high": 0.81365
+        },
+        "missing yarn": {
+          "value": 0.008581,
+          "low": 0.0,
+          "high": 0.084158
+        },
+        "stain": {
+          "value": 0.03185,
+          "low": 0.016462,
+          "high": 0.106353
+        }
+      },
+      "gt_instances": 68
+    },
+    "medium": {
+      "mean": {
+        "value": 0.132856,
+        "low": 0.044868,
+        "high": 0.215405
+      },
+      "per_class": {
+        "needle mark": {
+          "value": 0.193815,
+          "low": 0.0,
+          "high": 0.315627
+        },
+        "hole": {
+          "value": 0.194947,
+          "low": 0.0,
+          "high": 0.371558
+        },
+        "missing yarn": {
+          "value": 0.068556,
+          "low": 0.015025,
+          "high": 0.163061
+        },
+        "stain": {
+          "value": 0.074107,
+          "low": 0.002538,
+          "high": 0.217573
+        }
+      },
+      "gt_instances": 139
+    },
+    "large": {
+      "mean": {
+        "value": 0.180082,
+        "low": 0.070312,
+        "high": 0.246164
+      },
+      "per_class": {
+        "needle mark": {
+          "value": 0.066734,
+          "low": 0.012679,
+          "high": 0.164173
+        },
+        "hole": {
+          "value": 0.261039,
+          "low": 0.260018,
+          "high": 0.265334
+        },
+        "missing yarn": {
+          "value": 0.160562,
+          "low": 0.044358,
+          "high": 0.248765
+        },
+        "stain": {
+          "value": 0.231992,
+          "low": 0.0,
+          "high": 0.49595
+        }
+      },
+      "gt_instances": 169
+    }
+  },
+  "missing_yarn": {
+    "cldice": {
+      "value": 0.855066,
+      "low": 0.846142,
+      "high": 0.868586
+    },
+    "matched_share": {
+      "value": 0.590909,
+      "low": 0.490876,
+      "high": 0.708367
+    }
+  }
+}
