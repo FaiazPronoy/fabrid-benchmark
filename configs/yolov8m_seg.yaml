@@ -1,0 +1,14 @@
+step: baselines
+model: yolov8m
+weights: yolov8m-seg.pt
+arms: [session, random]
+seed: 0
+gap_seconds: 30
+imgsz: 640
+batch: 16
+epochs: 100
+patience: 20
+workers: 4
+device: 0
+hours_limit: 10.5
+publish: true

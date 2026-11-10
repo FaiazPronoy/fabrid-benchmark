@@ -1,0 +1,15 @@
+step: audit
+name: similarity
+model: vit_small_patch14_dinov2.lvd142m
+image_size: 448
+batch_size: 16
+save_every: 256
+gap_seconds: 30
+pair_seconds: 3
+percentile: 5
+offset: 0.05
+random_seed: 0
+max_ratio: 0.5
+sheet_pairs: 60
+hours_limit: 10.5
+publish: true

@@ -1,0 +1,5 @@
+step: audit
+name: integrity
+near_threshold: 8
+gap_seconds: 30
+publish: true

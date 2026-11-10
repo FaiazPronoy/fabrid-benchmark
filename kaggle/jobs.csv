@@ -1,0 +1,7 @@
+job,device,command
+yolov8m,gpu,python -m fabrid.yolo --config configs/yolov8m_seg.yaml
+yolo11m,gpu,python -m fabrid.yolo --config configs/yolo11m_seg.yaml
+maskrcnn,gpu,python -m fabrid.maskrcnn --config configs/maskrcnn_r50.yaml
+integrity,cpu,python -m fabrid.integrity --config configs/integrity.yaml
+geometry,cpu,python -m fabrid.geometry --config configs/geometry.yaml
+similarity,cpu,python -m fabrid.similarity --config configs/similarity.yaml

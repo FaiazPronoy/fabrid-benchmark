@@ -1,0 +1,9 @@
+step: audit
+name: geometry
+gap_seconds: 30
+seed: 0
+sheets_per_class: 4
+per_sheet: 24
+columns: 6
+tile: 160
+publish: true
