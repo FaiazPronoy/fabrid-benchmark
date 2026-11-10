@@ -1,0 +1,2 @@
+model,session_run,random_run,session_ap50,random_ap50,difference,low,high,inflation_claimed
+yolov8m,yolov8m_session_seed0,yolov8m_random_seed0,0.159504,0.36948,0.209976,0.080227,0.303904,True
