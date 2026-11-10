@@ -1,0 +1,72 @@
+{
+  "model": "segformer_b0",
+  "weights_source": "nvidia/segformer-b0-finetuned-ade-512-512",
+  "arm": "session",
+  "seed": 0,
+  "split": "val",
+  "endpoint": "mean over 4 defect classes of pooled val Dice, best epoch by the same",
+  "best_epoch": 22,
+  "val_mean_dice": 0.4359389622611444,
+  "epochs_run": 60,
+  "n_train": 1672,
+  "n_val": 359,
+  "overlap": {
+    "train": {
+      "images": 1672,
+      "contested_pixels": 9025,
+      "contested_images": 14
+    },
+    "val": {
+      "images": 359,
+      "contested_pixels": 4129,
+      "contested_images": 2
+    }
+  },
+  "mean_dice": 0.4359389622611444,
+  "per_class": {
+    "needle mark": {
+      "dice": 0.5381288044560236,
+      "iou": 0.3681095886534523,
+      "precision": 0.6232830767265061,
+      "recall": 0.47344564398161415,
+      "tp": 624400,
+      "fp": 377392,
+      "fn": 694442
+    },
+    "hole": {
+      "dice": 0.4495580016934801,
+      "iou": 0.28995473689729295,
+      "precision": 0.54637511731678,
+      "recall": 0.3818878607927082,
+      "tp": 33183,
+      "fp": 27550,
+      "fn": 53709
+    },
+    "missing yarn": {
+      "dice": 0.4073655555543471,
+      "iou": 0.25578095273214974,
+      "precision": 0.34466385704032243,
+      "recall": 0.49795399615526764,
+      "tp": 187280,
+      "fp": 356090,
+      "fn": 188819
+    },
+    "stain": {
+      "dice": 0.3487034873407268,
+      "iou": 0.21116951720510171,
+      "precision": 0.7721534418768455,
+      "recall": 0.22520226920767358,
+      "tp": 114010,
+      "fp": 33642,
+      "fn": 392246
+    }
+  },
+  "false_alarm": {
+    "defect_free_images": 92,
+    "alarms": 14,
+    "rate": 0.15217391304347827,
+    "min_pixels": 20
+  },
+  "class_maps": "/kaggle/working/runs/baselines/segformer_b0_session_seed0/val_maps.npz",
+  "weights": "/kaggle/working/runs/baselines/segformer_b0_session_seed0/checkpoints/best.pth"
+}
