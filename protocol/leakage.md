@@ -33,3 +33,7 @@ Otherwise no inflation is claimed for that model. The resampling details are fix
 analysis step before it reads any predictions.
 
 ## Notes
+- 2026-11-10, before any model prediction existed: the endpoint used for the rule is the
+  validation mask AP50 computed by `fabrid.evaluate` as defined in `protocol/evaluation.md`,
+  on each arm's `best.pt` predictions, not the number Ultralytics prints. The bootstrap that the
+  rule refers to is the session bootstrap fixed in `protocol/evaluation.md`.
