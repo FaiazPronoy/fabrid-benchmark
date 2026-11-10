@@ -1,0 +1,38 @@
+{
+  "images": 2407,
+  "images_per_export_folder": {
+    "test": 358,
+    "train": 1685,
+    "valid": 364
+  },
+  "label_files_missing": 0,
+  "empty_images": 613,
+  "images_without_valid_polygon": 613,
+  "lines": 2502,
+  "unparsed_lines": 0,
+  "parsed_invalid_polygons": 0,
+  "polygons_outside_unit_square": 0,
+  "valid_polygons": 2502,
+  "per_class": {
+    "needle mark": {
+      "lines": 636,
+      "valid_polygons": 636,
+      "images": 477
+    },
+    "hole": {
+      "lines": 568,
+      "valid_polygons": 568,
+      "images": 459
+    },
+    "missing yarn": {
+      "lines": 580,
+      "valid_polygons": 580,
+      "images": 511
+    },
+    "stain": {
+      "lines": 718,
+      "valid_polygons": 718,
+      "images": 429
+    }
+  }
+}
