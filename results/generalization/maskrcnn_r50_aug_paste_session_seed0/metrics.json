@@ -1,0 +1,94 @@
+{
+  "model": "maskrcnn_r50_aug_paste",
+  "arm": "session",
+  "seed": 0,
+  "split": "val",
+  "endpoint": "val mask AP50 at the best epoch by val mask AP50",
+  "best_epoch": 40,
+  "val_mask_AP50": 0.1838861645691459,
+  "epochs_run": 40,
+  "n_train": 1672,
+  "n_val": 359,
+  "instances": {
+    "train": {
+      "images": 1672,
+      "kept": 1752,
+      "dropped_under_1px": 0
+    },
+    "val": {
+      "images": 359,
+      "kept": 376,
+      "dropped_under_1px": 0
+    }
+  },
+  "box": {
+    "overall": {
+      "AP50": 0.2451797306744134,
+      "AP50-95": 0.1018764568945561,
+      "AR100": 0.31451945045695046
+    },
+    "per_class": {
+      "needle mark": {
+        "AP50": 0.28600838083955693,
+        "AP50-95": 0.11847315747201019,
+        "AR100": 0.33958333333333324
+      },
+      "hole": {
+        "AP50": 0.31020948332125686,
+        "AP50-95": 0.12993953037748765,
+        "AR100": 0.3476190476190476
+      },
+      "missing yarn": {
+        "AP50": 0.20019084183344646,
+        "AP50-95": 0.08935595775044655,
+        "AR100": 0.3477272727272728
+      },
+      "stain": {
+        "AP50": 0.1843102167033934,
+        "AP50-95": 0.06973718197827998,
+        "AR100": 0.22314814814814815
+      }
+    }
+  },
+  "mask": {
+    "overall": {
+      "AP50": 0.1838861645691459,
+      "AP50-95": 0.06646421572992482,
+      "AR100": 0.2076569264069264
+    },
+    "per_class": {
+      "needle mark": {
+        "AP50": 0.12720359372795528,
+        "AP50-95": 0.03444897327442648,
+        "AR100": 0.1375
+      },
+      "hole": {
+        "AP50": 0.3361106136390764,
+        "AP50-95": 0.1353478946486617,
+        "AR100": 0.3404761904761905
+      },
+      "missing yarn": {
+        "AP50": 0.12767954399792494,
+        "AP50-95": 0.03925438962813642,
+        "AR100": 0.14431818181818182
+      },
+      "stain": {
+        "AP50": 0.14455090691162703,
+        "AP50-95": 0.05680560536847471,
+        "AR100": 0.20833333333333334
+      }
+    }
+  },
+  "predictions": "/kaggle/working/runs/generalization/maskrcnn_r50_aug_paste_session_seed0/val_predictions.json",
+  "ground_truth": "/kaggle/working/runs/generalization/maskrcnn_r50_aug_paste_session_seed0/val_ground_truth.json",
+  "weights": "/kaggle/working/runs/generalization/maskrcnn_r50_aug_paste_session_seed0/checkpoints/best.pth",
+  "remedies": {
+    "aug": true,
+    "paste": true
+  },
+  "last_epoch": {
+    "epoch": 40,
+    "train_loss": 0.42917,
+    "val_mask_AP50": 0.1838861645691459
+  }
+}
