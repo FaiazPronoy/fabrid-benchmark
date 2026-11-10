@@ -54,8 +54,9 @@ def flip(pixels: np.ndarray, target: dict, horizontal: bool, vertical: bool):
 
 
 class Samples:
-    def __init__(self, records, flips=(0.0, 0.0), seed: int = 0):
+    def __init__(self, records, flips=(0.0, 0.0), seed: int = 0, prepare=None):
         self.records = records
+        self.prepare = prepare
         self.flips = flips
         self.seed = seed
         self.epoch = 0
@@ -67,6 +68,8 @@ class Samples:
         record = self.records[index]
         with Image.open(record.path) as image:
             pixels = np.array(image.convert("RGB"))
+        if self.prepare is not None:
+            pixels = self.prepare(pixels)
         target, _ = build_target(record.polygons, *pixels.shape[:2])
         if any(self.flips):
             rng = np.random.default_rng([self.seed, self.epoch, index])
@@ -173,19 +176,21 @@ def train_step(model, optimizer, scaler, images, targets, device, amp: bool):
     return {k: float(v) for k, v in losses.items()}, float(loss)
 
 
-def overfit_check(config: dict, train_records, device, amp: bool) -> dict:
+def overfit_check(
+    config: dict, train_records, device, amp: bool, builder=None, prepare=None
+) -> dict:
     import torch
 
     settings = config["sanity"]
     seed_everything(config["seed"])
     picks = [record for record in train_records if record.polygons][: settings["images"]]
-    data = Samples(picks)
+    data = Samples(picks, prepare=prepare)
     batches = []
     for start in range(0, len(data), config["batch"]):
         stop = min(start + config["batch"], len(data))
         images, targets, _ = collate([data[i] for i in range(start, stop)])
         batches.append(to_device(images, targets, device))
-    model = build_model(config).to(device).train()
+    model = (builder or build_model)(config).to(device).train()
     optimizer = make_optimizer(model, config)
     scaler = torch.amp.GradScaler(device.type, enabled=amp)
     totals = []
@@ -205,18 +210,18 @@ def overfit_check(config: dict, train_records, device, amp: bool) -> dict:
     }
 
 
-def empty_check(config: dict, train_records, device, amp: bool) -> dict:
+def empty_check(config: dict, train_records, device, amp: bool, builder=None, prepare=None) -> dict:
     import torch
 
     full = next(record for record in train_records if record.polygons)
     empty = next((record for record in train_records if not record.polygons), None)
-    data = Samples([full, empty or full])
+    data = Samples([full, empty or full], prepare=prepare)
     images, targets, _ = collate([data[0], data[1]])
     if empty is None:
         blank, _ = build_target([], *images[1].shape[1:])
         targets = (targets[0], {k: torch.from_numpy(v) for k, v in blank.items()})
     images, targets = to_device(images, targets, device)
-    model = build_model(config).to(device).train()
+    model = (builder or build_model)(config).to(device).train()
     result = {
         "images": [full.name, empty.name if empty else "synthetic empty target"],
         "empty_shapes": {k: list(v.shape) for k, v in targets[1].items()},
@@ -232,12 +237,14 @@ def empty_check(config: dict, train_records, device, amp: bool) -> dict:
     return result
 
 
-def sanity_checks(config: dict, train_records, device, amp: bool) -> dict:
+def sanity_checks(
+    config: dict, train_records, device, amp: bool, builder=None, prepare=None
+) -> dict:
     import torch
 
-    overfit = overfit_check(config, train_records, device, amp)
+    overfit = overfit_check(config, train_records, device, amp, builder, prepare)
     torch.cuda.empty_cache()
-    empty = empty_check(config, train_records, device, amp)
+    empty = empty_check(config, train_records, device, amp, builder, prepare)
     torch.cuda.empty_cache()
     return {
         "overfit": overfit,
@@ -388,12 +395,12 @@ def save_checkpoint(state: dict, directory: Path) -> None:
     (directory / "last.json").write_text(json.dumps({"epoch": state["epoch"]}), encoding="utf-8")
 
 
-def find_checkpoint(name: str, roots) -> Path | None:
+def find_checkpoint(name: str, roots, step: str = "baselines") -> Path | None:
     found = []
     for root in roots:
         if not Path(root).is_dir():
             continue
-        for marker in Path(root).glob(f"**/baselines/{name}/checkpoints/last.json"):
+        for marker in Path(root).glob(f"**/{step}/{name}/checkpoints/last.json"):
             weights = marker.with_name("last.pth")
             try:
                 epoch = int(json.loads(marker.read_text(encoding="utf-8"))["epoch"])
@@ -418,7 +425,16 @@ def write_json(path: Path, data) -> None:
     path.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
-def train(config: dict, name: str, train_records, val_records, deadline, run_dir: Path):
+def train(
+    config: dict,
+    name: str,
+    train_records,
+    val_records,
+    deadline,
+    run_dir: Path,
+    builder=None,
+    prepare=None,
+):
     import torch
     from torch.utils.data import DataLoader
 
@@ -429,19 +445,23 @@ def train(config: dict, name: str, train_records, val_records, deadline, run_dir
     amp = bool(config["amp"]) and device.type == "cuda"
     runs = runio.runs_dir(config["step"], name)
     checkpoints = runs / "checkpoints"
-    source = find_checkpoint(name, [runs.parent.parent, INPUT_ROOT])
+    source = find_checkpoint(name, [runs.parent.parent, INPUT_ROOT], config["step"])
     saved = torch.load(source, map_location="cpu", weights_only=False) if source else None
-    sanity = saved["sanity"] if saved else sanity_checks(config, train_records, device, amp)
+    if saved:
+        sanity = saved["sanity"]
+    else:
+        sanity = sanity_checks(config, train_records, device, amp, builder, prepare)
     write_json(run_dir / "sanity.json", sanity)
     if not sanity["passed"]:
         raise SystemExit(f"{name}: sanity check failed, see {run_dir / 'sanity.json'}")
     print(f"{name}: sanity checks passed, wrote {run_dir / 'sanity.json'}")
 
     seed_everything(config["seed"])
-    model = build_model(config).to(device)
+    model = (builder or build_model)(config).to(device)
     optimizer = make_optimizer(model, config)
     scaler = torch.amp.GradScaler(device.type, enabled=amp)
-    train_data = Samples(train_records, (config["hflip"], config["vflip"]), config["seed"])
+    flips = (config["hflip"], config["vflip"])
+    train_data = Samples(train_records, flips, config["seed"], prepare)
     steps = math.ceil(len(train_data) / config["batch"])
     warmup, total = config["warmup_epochs"] * steps, config["epochs"] * steps
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda s: lr_factor(s, warmup, total))
@@ -459,7 +479,8 @@ def train(config: dict, name: str, train_records, val_records, deadline, run_dir
     truth = coco_truth(val_records)
     write_json(runs / "val_ground_truth.json", truth)
     loader_args = {"collate_fn": collate, "num_workers": config["workers"], "pin_memory": cuda}
-    val_loader = DataLoader(Samples(val_records), batch_size=config["batch"], **loader_args)
+    val_data = Samples(val_records, prepare=prepare)
+    val_loader = DataLoader(val_data, batch_size=config["batch"], **loader_args)
     for epoch in range(state["epoch"] + 1, config["epochs"] + 1):
         started = time.time()
         train_data.epoch = epoch
@@ -473,7 +494,7 @@ def train(config: dict, name: str, train_records, val_records, deadline, run_dir
             losses, loss = train_step(model, optimizer, scaler, images, targets, device, amp)
             scheduler.step()
             for key, value in {"loss": loss, **losses}.items():
-                sums[key] += value
+                sums[key] = sums.get(key, 0.0) + value
         means = {key: round(value / steps, 5) for key, value in sums.items()}
         detections = predict(model, val_loader, device, amp, config["mask_threshold"])
         scores = coco_scores(truth, detections)
@@ -509,7 +530,9 @@ def train(config: dict, name: str, train_records, val_records, deadline, run_dir
     return "finished", state
 
 
-def finalize(config: dict, name: str, state: dict, mapping, counts, run_dir: Path) -> dict:
+def finalize(
+    config: dict, name: str, state: dict, mapping, counts, run_dir: Path, extra=None
+) -> dict:
     runs = runio.runs_dir(config["step"], name)
     best = state["best"]
     summary = {
@@ -528,17 +551,14 @@ def finalize(config: dict, name: str, state: dict, mapping, counts, run_dir: Pat
         "predictions": str(runs / "val_predictions.json"),
         "ground_truth": str(runs / "val_ground_truth.json"),
         "weights": str(runs / "checkpoints" / "best.pth"),
+        **(extra or {}),
     }
     write_json(run_dir / "metrics.json", summary)
     write_csv(run_dir / "split.csv", ["name", "split"], sorted(mapping.items()))
     return summary
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", required=True)
-    args = parser.parse_args()
-    config = runio.load_config(args.config)
+def run(config: dict, builder=None, extra=None, prepare=None) -> None:
     deadline = Deadline(config["hours_limit"])
     name = f"{config['model']}_{config['arm']}_seed{config['seed']}"
     done = runio.repo_root() / "results" / config["step"] / name / "metrics.json"
@@ -557,17 +577,25 @@ def main() -> None:
             f"{count['dropped_under_1px']} dropped with a box under 1 px"
         )
     run_dir = runio.start_run(config["step"], name, config)
-    status, state = train(config, name, train_records, val_records, deadline, run_dir)
+    status, state = train(
+        config, name, train_records, val_records, deadline, run_dir, builder, prepare
+    )
     if status == "paused":
         print(f"{name}: paused, checkpoint in {runio.runs_dir(config['step'], name)}")
         return
-    summary = finalize(config, name, state, mapping, counts, run_dir)
+    summary = finalize(config, name, state, mapping, counts, run_dir, extra)
     print(
         f"{name}: best epoch {summary['best_epoch']}, val mask AP50 {summary['val_mask_AP50']:.4f}"
     )
     print(f"{name}: wrote {run_dir}")
     if config.get("publish", True):
         runio.publish(run_dir)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", required=True)
+    run(runio.load_config(parser.parse_args().config))
 
 
 if __name__ == "__main__":

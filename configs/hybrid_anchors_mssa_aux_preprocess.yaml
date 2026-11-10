@@ -1,0 +1,41 @@
+step: ablation
+model: hybrid_anchors_mssa_aux_preprocess
+arm: session
+seed: 0
+gap_seconds: 30
+imgsz: 640
+batch: 4
+epochs: 40
+warmup_epochs: 2
+lr: 0.0001
+weight_decay: 0.0001
+amp: true
+hflip: 0.5
+vflip: 0.5
+mask_threshold: 0.5
+workers: 2
+device: cuda
+hours_limit: 10.5
+sanity:
+  images: 8
+  iterations: 150
+  ratio: 0.5
+components:
+  anchors: true
+  mssa: true
+  aux: true
+  preprocess: true
+aux:
+  focal: 1.0
+  dice: 1.0
+  boundary: 0.5
+  gamma: 2.0
+preprocess:
+  clahe_clip: 2.0
+  clahe_tile: 8
+  gabor_angles: [0, 45, 90, 135]
+  gabor_frequency: 0.18
+  gabor_sigma: 3.0
+  gabor_gamma: 0.5
+  gabor_strength: 0.15
+publish: true

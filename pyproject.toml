@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 dependencies = ["numpy", "pillow", "pyyaml"]
 
 [project.optional-dependencies]
-kaggle = ["ultralytics>=8.3", "pycocotools", "scipy", "scikit-image", "timm"]
+kaggle = ["ultralytics>=8.3", "pycocotools", "scipy", "scikit-image", "timm", "transformers"]
 dev = ["pytest", "ruff", "scipy", "scikit-image"]
 
 [tool.setuptools.packages.find]

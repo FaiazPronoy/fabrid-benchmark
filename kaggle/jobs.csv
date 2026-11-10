@@ -5,3 +5,9 @@ maskrcnn,gpu,python -m fabrid.maskrcnn --config configs/maskrcnn_r50.yaml
 integrity,cpu,python -m fabrid.integrity --config configs/integrity.yaml
 geometry,cpu,python -m fabrid.geometry --config configs/geometry.yaml
 similarity,cpu,python -m fabrid.similarity --config configs/similarity.yaml
+segformer,gpu,python -m fabrid.semantic --config configs/segformer_b0.yaml
+hybrid_anchors,gpu,python -m fabrid.hybrid --config configs/hybrid_anchors.yaml
+hybrid_anchors_mssa,gpu,python -m fabrid.hybrid --config configs/hybrid_anchors_mssa.yaml
+hybrid_anchors_mssa_aux,gpu,python -m fabrid.hybrid --config configs/hybrid_anchors_mssa_aux.yaml
+hybrid_anchors_mssa_aux_preprocess,gpu,python -m fabrid.hybrid --config configs/hybrid_anchors_mssa_aux_preprocess.yaml
+evaluate,cpu,python -m fabrid.evaluate --config configs/evaluate.yaml

@@ -1,0 +1,20 @@
+step: evaluation
+gap_seconds: 30
+iou: 0.5
+tolerance_px: 2
+cldice_tol_px: 1
+resamples: 1000
+seed: 0
+roots: [/kaggle/working/runs, /kaggle/input]
+runs:
+  - name: yolov8m_session_seed0
+    predictions: baselines/yolov8m_session_seed0/val_predictions.json
+  - name: yolov8m_random_seed0
+    predictions: baselines/yolov8m_random_seed0/val_predictions.json
+  - name: yolo11m_session_seed0
+    predictions: baselines/yolo11m_session_seed0/val_predictions.json
+  - name: yolo11m_random_seed0
+    predictions: baselines/yolo11m_random_seed0/val_predictions.json
+  - name: maskrcnn_r50_session_seed0
+    predictions: baselines/maskrcnn_r50_session_seed0/val_predictions.json
+publish: true
