@@ -1,0 +1,11 @@
+metric,class,baseline,candidate,difference,low,high,verdict
+mask_ap50,mean,0.16907,0.181891,0.012821,-0.031802,0.048409,not shown
+mask_ap50,needle mark,0.151179,0.132143,-0.019036,-0.082473,0.050068,not shown
+mask_ap50,hole,0.345238,0.475484,0.130247,-0.029443,0.219977,not shown
+mask_ap50,missing yarn,0.079672,0.040307,-0.039365,-0.089472,-0.002721,lower
+mask_ap50,stain,0.100192,0.079632,-0.02056,-0.06123,0.02009,not shown
+tolerant_ap50,mean,0.251822,0.247488,-0.004334,-0.04099,0.042231,not shown
+tolerant_ap50,needle mark,0.185343,0.144589,-0.040754,-0.087331,0.027555,not shown
+tolerant_ap50,hole,0.490883,0.582687,0.091804,-0.028846,0.248421,not shown
+tolerant_ap50,missing yarn,0.185118,0.140644,-0.044474,-0.114799,0.023518,not shown
+tolerant_ap50,stain,0.145943,0.122032,-0.023911,-0.105598,0.021883,not shown
