@@ -1,0 +1,2 @@
+model,session_run,random_run,session_ap50,random_ap50,difference,low,high,inflation_claimed
+yolo11m,yolo11m_session_seed0,yolo11m_random_seed0,0.145105,0.388105,0.243,0.094151,0.320508,True
