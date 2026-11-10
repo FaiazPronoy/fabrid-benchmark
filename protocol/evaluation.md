@@ -83,3 +83,31 @@ each.
   `results/evaluation/leakage.csv` and `summary.md` are written per model instead, as
   `results/evaluation/summary_<model>/leakage.csv` and `summary.md`, so that runs evaluated from
   different accounts never write the same file. Metrics, intervals and rules are unchanged.
+- 2026-11-10, before any comparison was computed: paired comparisons. The config may list
+  comparisons, each naming a baseline run and a candidate run. Both must have the same
+  validation images, or the evaluator stops with an error. One set of 1000 session resamples
+  per comparison, from `numpy.random.default_rng([0, crc32(comparison name)])`, rescores both
+  runs on the same resampled sessions. For the primary endpoint and tolerant AP50, per class
+  and mean, the difference is candidate minus baseline, with the 2.5 and 97.5 percentiles of
+  the resampled differences as its interval, ignoring resamples where either value is
+  undefined. Verdict: "higher" if the difference is positive and the interval excludes zero,
+  "lower" if negative and the interval excludes zero, else "not shown". The top level verdict
+  of a comparison is the one for the mean primary endpoint. Outputs go to
+  `results/evaluation/compare_<name>/` (`comparison.json`, `comparison.csv`, `config.yaml`).
+  The unpaired leakage rule is unchanged. A run entry may also name its step (default
+  baselines), which sets its default predictions path `<step>/<run>/val_predictions.json` and
+  split path `results/<step>/<run>/split.csv`; ablation runs use step ablation.
+- 2026-11-11, after the Mask R-CNN parent was scored (0.172901) and before any YOLO or ablation
+  run was scored: two changes, neither touching a metric, an interval or a rule. First, a
+  defect: image ids in a ground truth file were read as integers, so the YOLO files, whose ids
+  are file stems, stopped the evaluator with an error before anything was scored. Ids are now
+  compared as text. Second, every scored run also writes its per-detection table
+  (`scored_images.csv`, `scored_predictions.csv`, `scored_truth.csv`: image, class, score, match
+  flags, size bucket, and per ground truth instance its match flag and clDice) next to
+  `metrics.json`. When a listed run has no prediction file in reach but has these stored tables
+  in the repository, the evaluator reads them instead, checks that they reproduce the stored
+  primary endpoint exactly and that no image is from the locked test part, and uses them for
+  the leakage table and the paired comparisons. This lets a comparison be computed when its two
+  runs were trained on different accounts. Such a run is not rescored and its files are not
+  rewritten. Runs under `results/generalization/` and their comparisons against the parent
+  (`protocol/generalization.md`) are added to the config.
