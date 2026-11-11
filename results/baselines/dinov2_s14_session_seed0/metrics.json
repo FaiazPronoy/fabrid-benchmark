@@ -1,0 +1,72 @@
+{
+  "model": "dinov2_s14",
+  "weights_source": "vit_small_patch14_dinov2.lvd142m",
+  "arm": "session",
+  "seed": 0,
+  "split": "val",
+  "endpoint": "mean over 4 defect classes of pooled val Dice, best epoch by the same",
+  "best_epoch": 39,
+  "val_mean_dice": 0.474249263572704,
+  "epochs_run": 60,
+  "n_train": 1672,
+  "n_val": 359,
+  "overlap": {
+    "train": {
+      "images": 1672,
+      "contested_pixels": 9025,
+      "contested_images": 14
+    },
+    "val": {
+      "images": 359,
+      "contested_pixels": 4129,
+      "contested_images": 2
+    }
+  },
+  "mean_dice": 0.474249263572704,
+  "per_class": {
+    "needle mark": {
+      "dice": 0.5036275005515719,
+      "iou": 0.3365655949552748,
+      "precision": 0.6074558984633935,
+      "recall": 0.4301114159239697,
+      "tp": 567249,
+      "fp": 366562,
+      "fn": 751593
+    },
+    "hole": {
+      "dice": 0.5491583720484253,
+      "iou": 0.37851021191318807,
+      "precision": 0.5937211573188512,
+      "recall": 0.5108180269760162,
+      "tp": 44386,
+      "fp": 30373,
+      "fn": 42506
+    },
+    "missing yarn": {
+      "dice": 0.4012242525739874,
+      "iou": 0.25095717971701037,
+      "precision": 0.3677188444058577,
+      "recall": 0.441447597574043,
+      "tp": 166028,
+      "fp": 285480,
+      "fn": 210071
+    },
+    "stain": {
+      "dice": 0.4429869291168314,
+      "iou": 0.28451073237655,
+      "precision": 0.8508638011741859,
+      "recall": 0.2994433646218514,
+      "tp": 151595,
+      "fp": 26571,
+      "fn": 354661
+    }
+  },
+  "false_alarm": {
+    "defect_free_images": 92,
+    "alarms": 16,
+    "rate": 0.17391304347826086,
+    "min_pixels": 20
+  },
+  "class_maps": "/kaggle/working/runs/baselines/dinov2_s14_session_seed0/val_maps.npz",
+  "weights": "/kaggle/working/runs/baselines/dinov2_s14_session_seed0/checkpoints/best.pth"
+}

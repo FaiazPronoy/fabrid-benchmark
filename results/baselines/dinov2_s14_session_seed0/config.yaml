@@ -1,0 +1,47 @@
+config:
+  step: baselines
+  model: dinov2_s14
+  weights: vit_small_patch14_dinov2.lvd142m
+  arm: session
+  seed: 0
+  gap_seconds: 30
+  imgsz: 644
+  layers: 4
+  head_channels: 256
+  batch: 8
+  epochs: 60
+  warmup_epochs: 2
+  lr: 0.001
+  weight_decay: 0.01
+  amp: true
+  hflip: 0.5
+  vflip: 0.5
+  dice_weight: 1.0
+  alarm_pixels: 20
+  workers: 2
+  device: cuda
+  hours_limit: 10.5
+  sanity:
+    images: 8
+    iterations: 150
+    ratio: 0.5
+  publish: true
+git_commit: 707a698add3827c39a84f9d67e23dd65d0868921
+git_dirty: false
+versions:
+  python: 3.13.16
+  fabrid: 0.1.0
+  numpy: 2.1.3
+  pillow: 13.0.0
+  pyyaml: 6.0.3
+  torch: 2.11.0+cu130
+  torchvision: 0.26.0+cu130
+  ultralytics: 8.4.210
+  opencv-python: 4.14.0.94
+  pycocotools: 2.0.11
+  scipy: 1.16.3
+  scikit-image: 0.25.2
+  timm: 1.0.30
+  transformers: 5.20.2
+  albumentations: 2.0.8
+started: '2026-11-11T08:01:06+00:00'
