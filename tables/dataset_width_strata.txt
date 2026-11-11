@@ -1,0 +1,2 @@
+Share of instances by median width in pixels (up to 2, over 2 to 4, over 4 to 8, over 8), per class.
+read: results/audit/geometry/width_strata.csv

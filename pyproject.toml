@@ -11,7 +11,7 @@ dependencies = ["numpy", "pillow", "pyyaml"]
 
 [project.optional-dependencies]
 kaggle = ["ultralytics>=8.3", "pycocotools", "scipy", "scikit-image", "timm", "transformers"]
-dev = ["pytest", "ruff", "scipy", "scikit-image"]
+dev = ["pytest", "ruff", "scipy", "scikit-image", "matplotlib", "opencv-python-headless"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

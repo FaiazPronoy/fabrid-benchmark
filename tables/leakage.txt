@@ -1,0 +1,11 @@
+Validation mask AP50, session against random split, 95% session bootstrap.
+read: results/evaluation/summary_yolov8m/leakage.csv
+read: results/evaluation/yolov8m_session_seed0/metrics.json
+yolov8m_session_seed0 (seed 0): 359 validation images in 33 sessions
+read: results/evaluation/yolov8m_random_seed0/metrics.json
+yolov8m_random_seed0 (seed 0): 359 validation images in 73 sessions
+read: results/evaluation/summary_yolo11m/leakage.csv
+read: results/evaluation/yolo11m_session_seed0/metrics.json
+yolo11m_session_seed0 (seed 0): 359 validation images in 33 sessions
+read: results/evaluation/yolo11m_random_seed0/metrics.json
+yolo11m_random_seed0 (seed 0): 359 validation images in 73 sessions

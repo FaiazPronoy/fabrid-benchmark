@@ -1,0 +1,2 @@
+Images, sessions, empty images and instances per capture day, all pooled images.
+read: results/audit/integrity/day_class_table.csv

@@ -13,3 +13,4 @@ views/
 *.pth
 *.ckpt
 *.zip
+figures/

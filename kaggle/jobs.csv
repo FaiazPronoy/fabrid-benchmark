@@ -18,3 +18,4 @@ maskrcnn_paste,gpu,python -m fabrid.augment --config configs/maskrcnn_r50_paste.
 maskrcnn_aug_paste,gpu,python -m fabrid.augment --config configs/maskrcnn_r50_aug_paste.yaml
 dinov2,gpu,python -m fabrid.semantic --config configs/dinov2_s14.yaml
 semantic_compare,cpu,python -m fabrid.semantic --compare segformer_b0_session_seed0 dinov2_s14_session_seed0
+tsfabrics_fetch,cpu,python -m fabrid.fetch --config configs/tsfabrics_fetch.yaml

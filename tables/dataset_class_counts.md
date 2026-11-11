@@ -1,0 +1,9 @@
+| class | instances | images |
+|---|---|---|
+| needle mark | 636 | 477 |
+| hole | 568 | 459 |
+| missing yarn | 580 | 511 |
+| stain | 718 | 429 |
+| all classes | 2502 |  |
+| empty label file |  | 613 |
+| all images |  | 2407 |

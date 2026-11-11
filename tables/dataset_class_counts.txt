@@ -1,0 +1,2 @@
+Instances (valid polygons) and images per class, all pooled images, no split.
+read: results/audit/integrity/label_counts.json

@@ -1,0 +1,4 @@
+| model | session_run | session_ap50 | session_low | session_high | random_run | random_ap50 | random_low | random_high | difference | low | high | inflation_claimed |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| yolov8m | yolov8m_session_seed0 | 0.159504 | 0.094342 | 0.238822 | yolov8m_random_seed0 | 0.36948 | 0.273157 | 0.430761 | 0.209976 | 0.080227 | 0.303904 | True |
+| yolo11m | yolo11m_session_seed0 | 0.145105 | 0.088708 | 0.223108 | yolo11m_random_seed0 | 0.388105 | 0.261536 | 0.454591 | 0.243 | 0.094151 | 0.320508 | True |

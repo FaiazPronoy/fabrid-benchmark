@@ -1,0 +1,90 @@
+results: results
+figures_dir: figures
+tables_dir: tables
+dpi: 200
+figures:
+  - name: leakage
+    kind: leakage
+    models: [yolov8m, yolo11m]
+
+  - name: ablation_differences
+    kind: forest
+    comparisons: [anchors, mssa, aux, preprocess]
+
+  - name: generalization_differences
+    kind: forest
+    comparisons: [maskrcnn_aug, maskrcnn_paste, maskrcnn_aug_paste, aug]
+
+  - name: ablation_curves
+    kind: curves
+    epoch_columns: [epoch]
+    loss_columns: [loss]
+    ap_columns: [mask_AP50]
+    runs:
+      - {step: baselines, run: maskrcnn_r50_session_seed0, label: parent}
+      - {step: ablation, run: hybrid_anchors_session_seed0, label: anchors}
+      - {step: ablation, run: hybrid_anchors_mssa_session_seed0, label: anchors + mssa}
+      - {step: ablation, run: hybrid_anchors_mssa_aux_session_seed0, label: anchors + mssa + aux}
+      - step: ablation
+        run: hybrid_anchors_mssa_aux_preprocess_session_seed0
+        label: anchors + mssa + aux + preprocess
+
+  - name: generalization_curves
+    kind: curves
+    epoch_columns: [epoch]
+    loss_columns: [loss]
+    ap_columns: [mask_AP50]
+    runs:
+      - {step: baselines, run: maskrcnn_r50_session_seed0, label: parent}
+      - {step: generalization, run: maskrcnn_r50_aug_session_seed0, label: aug}
+      - {step: generalization, run: maskrcnn_r50_paste_session_seed0, label: paste}
+      - {step: generalization, run: maskrcnn_r50_aug_paste_session_seed0, label: aug + paste}
+
+  - name: per_class_baselines
+    kind: per_class
+    runs:
+      - yolov8m_session_seed0
+      - yolov8m_random_seed0
+      - yolo11m_session_seed0
+      - yolo11m_random_seed0
+      - maskrcnn_r50_session_seed0
+
+  - name: per_class_ablation
+    kind: per_class
+    runs:
+      - maskrcnn_r50_session_seed0
+      - hybrid_anchors_session_seed0
+      - hybrid_anchors_mssa_session_seed0
+      - hybrid_anchors_mssa_aux_session_seed0
+      - hybrid_anchors_mssa_aux_preprocess_session_seed0
+
+  - name: per_class_generalization
+    kind: per_class
+    runs:
+      - maskrcnn_r50_session_seed0
+      - maskrcnn_r50_aug_session_seed0
+      - maskrcnn_r50_paste_session_seed0
+      - maskrcnn_r50_aug_paste_session_seed0
+      - yolov8m_session_seed0
+      - yolov8m_aug_session_seed0
+
+  - name: dataset
+    kind: dataset
+    tables: [class_counts, day_class, size_strata, width_strata]
+
+  - name: pr
+    kind: pr
+    runs:
+      - yolov8m_session_seed0
+      - yolov8m_random_seed0
+      - yolo11m_session_seed0
+      - yolo11m_random_seed0
+      - maskrcnn_r50_session_seed0
+      - yolov8m_aug_session_seed0
+      - hybrid_anchors_session_seed0
+      - hybrid_anchors_mssa_session_seed0
+      - hybrid_anchors_mssa_aux_session_seed0
+      - hybrid_anchors_mssa_aux_preprocess_session_seed0
+      - maskrcnn_r50_aug_session_seed0
+      - maskrcnn_r50_paste_session_seed0
+      - maskrcnn_r50_aug_paste_session_seed0

@@ -1,0 +1,2 @@
+Share of instances by bounding box area in pixels (under 32x32, 32x32 to 96x96, over 96x96), per class.
+read: results/audit/geometry/size_strata.csv

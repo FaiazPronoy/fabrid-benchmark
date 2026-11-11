@@ -1,0 +1,14 @@
+step: external
+name: tsfabrics_fetch
+doi: 10.6084/m9.figshare.29573381
+api: https://api.figshare.com/v2
+runs_root: /tmp/fabrid_runs
+timeout: 60
+retries: 8
+retry_wait: 10
+expansion: 1.1
+margin_gb: 2
+nested_depth: 2
+mask_sample: 20
+mask_max_values: 32
+publish: true
