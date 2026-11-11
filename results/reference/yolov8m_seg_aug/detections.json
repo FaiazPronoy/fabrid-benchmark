@@ -1,0 +1,134 @@
+{
+  "model_key": "yolov8m_seg_aug",
+  "weights_sha256": "c494de8e36a177302ec9c66683d24fe6b52ecf42fbec059960d8604a88605d8a",
+  "min_score": 0.05,
+  "images": [
+    {
+      "file": "IMG_20260506_020622_jpg.rf.2400219cddd369c84c132a330f14536c.jpg",
+      "width": 640,
+      "height": 360,
+      "detections": []
+    },
+    {
+      "file": "IMG_20260714_180255_jpg.rf.b624d10bbbb50e5c1ef9b06e80bb3679.jpg",
+      "width": 640,
+      "height": 480,
+      "detections": [
+        {
+          "label": "hole",
+          "score": 0.6124,
+          "box": [
+            335.84,
+            264.63,
+            363.78,
+            297.94
+          ],
+          "mask_area": 773
+        },
+        {
+          "label": "missing yarn",
+          "score": 0.138871,
+          "box": [
+            113.65,
+            0.0,
+            535.48,
+            480.0
+          ],
+          "mask_area": 7604
+        },
+        {
+          "label": "missing yarn",
+          "score": 0.108399,
+          "box": [
+            209.68,
+            40.66,
+            507.54,
+            466.98
+          ],
+          "mask_area": 8955
+        },
+        {
+          "label": "missing yarn",
+          "score": 0.071664,
+          "box": [
+            2.01,
+            35.41,
+            528.75,
+            476.25
+          ],
+          "mask_area": 7900
+        },
+        {
+          "label": "hole",
+          "score": 0.057723,
+          "box": [
+            333.35,
+            260.75,
+            368.89,
+            296.81
+          ],
+          "mask_area": 946
+        }
+      ]
+    },
+    {
+      "file": "IMG_20260506_014600_jpg.rf.00d1522bb21e3399152df82a28a95be5.jpg",
+      "width": 640,
+      "height": 360,
+      "detections": [
+        {
+          "label": "missing yarn",
+          "score": 0.496402,
+          "box": [
+            378.35,
+            9.12,
+            404.9,
+            360.0
+          ],
+          "mask_area": 3808
+        },
+        {
+          "label": "missing yarn",
+          "score": 0.156779,
+          "box": [
+            372.86,
+            9.53,
+            401.12,
+            347.87
+          ],
+          "mask_area": 3763
+        }
+      ]
+    },
+    {
+      "file": "IMG_20260505_224541_jpg.rf.96178a27d057f86e024ffc194c5b3309.jpg",
+      "width": 640,
+      "height": 360,
+      "detections": [
+        {
+          "label": "missing yarn",
+          "score": 0.183348,
+          "box": [
+            499.06,
+            1.64,
+            622.57,
+            86.36
+          ],
+          "mask_area": 1478
+        }
+      ]
+    },
+    {
+      "file": "IMG_20260505_224419_jpg.rf.1a74db90e6a40168c6cfdec5d07099a8.jpg",
+      "width": 640,
+      "height": 360,
+      "detections": []
+    },
+    {
+      "file": "IMG_20260505_224425_jpg.rf.b83d431e435aa22bc986cee48fb7f0cb.jpg",
+      "width": 640,
+      "height": 360,
+      "detections": []
+    }
+  ]
+}
