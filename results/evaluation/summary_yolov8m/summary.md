@@ -12,5 +12,3 @@ Validation only, one evaluator for every run. Intervals: 95% session bootstrap.
 | model | session AP50 | random AP50 | difference | 95% interval | inflation |
 |---|---|---|---|---|---|
 | yolov8m | 0.160 | 0.369 | 0.210 | [0.080, 0.304] | yes |
-
-Runs listed but not found: yolov8m_aug_session_seed0.
