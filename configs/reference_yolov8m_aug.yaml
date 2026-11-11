@@ -5,6 +5,7 @@ run: baselines/yolov8m_aug_session_seed0
 weights: train/weights/best.pt
 roots: [/kaggle/working/runs, /kaggle/input]
 gap_seconds: 30
+per_class: 3
 min_score: 0.05
 report_score: 0.30
 predict:

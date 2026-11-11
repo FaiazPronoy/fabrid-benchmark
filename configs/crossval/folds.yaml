@@ -1,0 +1,4 @@
+step: crossval
+name: folds
+gap_seconds: 30
+publish: true

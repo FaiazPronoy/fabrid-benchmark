@@ -21,3 +21,15 @@ semantic_compare,cpu,python -m fabrid.semantic --compare segformer_b0_session_se
 tsfabrics_fetch,cpu,python -m fabrid.fetch --config configs/tsfabrics_fetch.yaml
 reference_yolov8m_aug,cpu,python -m fabrid.reference --config configs/reference_yolov8m_aug.yaml
 reference_fabrimssa,cpu,python -m fabrid.reference --config configs/reference_fabrimssa.yaml
+crossval_folds,cpu,python -m fabrid.folds --config configs/crossval/folds.yaml
+crossval_maskrcnn_fold0,gpu,python -m fabrid.maskrcnn --config configs/crossval/maskrcnn_r50_fold0.yaml
+crossval_maskrcnn_fold1,gpu,python -m fabrid.maskrcnn --config configs/crossval/maskrcnn_r50_fold1.yaml
+crossval_maskrcnn_fold2,gpu,python -m fabrid.maskrcnn --config configs/crossval/maskrcnn_r50_fold2.yaml
+crossval_maskrcnn_fold3,gpu,python -m fabrid.maskrcnn --config configs/crossval/maskrcnn_r50_fold3.yaml
+crossval_maskrcnn_fold4,gpu,python -m fabrid.maskrcnn --config configs/crossval/maskrcnn_r50_fold4.yaml
+crossval_maskrcnn_aug_fold0,gpu,python -m fabrid.augment --config configs/crossval/maskrcnn_r50_aug_fold0.yaml
+crossval_maskrcnn_aug_fold1,gpu,python -m fabrid.augment --config configs/crossval/maskrcnn_r50_aug_fold1.yaml
+crossval_maskrcnn_aug_fold2,gpu,python -m fabrid.augment --config configs/crossval/maskrcnn_r50_aug_fold2.yaml
+crossval_maskrcnn_aug_fold3,gpu,python -m fabrid.augment --config configs/crossval/maskrcnn_r50_aug_fold3.yaml
+crossval_maskrcnn_aug_fold4,gpu,python -m fabrid.augment --config configs/crossval/maskrcnn_r50_aug_fold4.yaml
+crossval_evaluate,cpu,python -m fabrid.evaluate --config configs/crossval/evaluate.yaml

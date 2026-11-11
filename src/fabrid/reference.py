@@ -15,6 +15,8 @@ from fabrid.sessions import session_split
 
 KINDS = ("yolo", "hybrid")
 EMPTY_PICKS = 2
+PER_CLASS = 3
+STRONG_MINIMUM = 10
 
 
 def label_name(index: int, kind: str) -> str:
@@ -32,24 +34,45 @@ def refuse_locked(names, locked: dict[str, str], listed: dict[str, str] | None =
             raise AssertionError(f"{name} is not listed as val in the run's split.csv")
 
 
-def select_images(records, locked: dict[str, str], listed: dict[str, str] | None = None) -> list:
+def fits(record, limit: int) -> bool:
+    return record.path.stat().st_size <= limit
+
+
+def first_fitting(candidates, count: int, limit: int, skipped: list) -> list:
+    picks = []
+    for record in candidates:
+        if len(picks) == count:
+            break
+        if fits(record, limit):
+            picks.append(record)
+        elif record.name not in skipped:
+            skipped.append(record.name)
+    return picks
+
+
+def select_images(
+    records,
+    locked: dict[str, str],
+    listed: dict[str, str] | None = None,
+    per_class: int = PER_CLASS,
+    limit: int = runio.IMAGE_LIMIT,
+) -> tuple[list, list[str]]:
     val = sorted((r for r in records if locked.get(r.name) == "val"), key=lambda r: r.name)
-    chosen, taken = [], set()
+    chosen, taken, skipped = [], set(), []
     for class_id, class_name in enumerate(CLASSES):
-        pick = next(
-            (r for r in val if r.name not in taken and class_id in {c for c, _ in r.polygons}),
-            None,
-        )
-        if pick is None:
-            raise ValueError(f"no val image holds the class {class_name}")
-        chosen.append(pick)
-        taken.add(pick.name)
-    empty = [r for r in val if r.n_lines == 0 and r.name not in taken][:EMPTY_PICKS]
+        holding = (r for r in val if r.name not in taken and class_id in {c for c, _ in r.polygons})
+        picks = first_fitting(holding, per_class, limit, skipped)
+        if len(picks) < per_class:
+            raise ValueError(f"fewer than {per_class} val images hold the class {class_name}")
+        chosen += picks
+        taken.update(r.name for r in picks)
+    blank = (r for r in val if r.n_lines == 0 and r.name not in taken)
+    empty = first_fitting(blank, EMPTY_PICKS, limit, skipped)
     if len(empty) < EMPTY_PICKS:
         raise ValueError(f"fewer than {EMPTY_PICKS} val images have an empty label file")
     chosen += empty
     refuse_locked([r.name for r in chosen], locked, listed)
-    return chosen
+    return chosen, skipped
 
 
 def find(relative: str, roots) -> Path | None:
@@ -198,8 +221,11 @@ def main() -> None:
     print(f"indexed {len(records)} images from {records[0].path.parents[2]}")
     locked = session_split(records, config["gap_seconds"])
     listed = read_split(runio.repo_root() / "results" / config["run"] / "split.csv")
-    chosen = select_images(records, locked, listed)
-    print(f"weights {weights}, images {[r.name for r in chosen]}")
+    per_class = config.get("per_class", PER_CLASS)
+    chosen, skipped = select_images(records, locked, listed, per_class)
+    for name in skipped:
+        print(f"skipped {name}: over the {runio.IMAGE_LIMIT // 1024} KB publish limit")
+    print(f"weights {weights}, {len(chosen)} images {[r.name for r in chosen]}")
     if config["kind"] == "yolo":
         predict = yolo_predictor(weights, config["predict"])
     else:
@@ -213,6 +239,14 @@ def main() -> None:
             f"{image['file']}: {strong} detections at score {config['report_score']} or more, "
             f"{len(image['detections'])} kept"
         )
+    total = sum(
+        d["score"] >= config["report_score"]
+        for image in data["images"]
+        for d in image["detections"]
+    )
+    print(f"pack total: {total} detections at score {config['report_score']} or more")
+    if total < STRONG_MINIMUM:
+        print(f"warning: fewer than {STRONG_MINIMUM} detections at score {config['report_score']}")
     large = [p.name for p in copies if not runio.publishable(p)]
     if large:
         print(f"these images are too large to commit and will be left out: {large}")

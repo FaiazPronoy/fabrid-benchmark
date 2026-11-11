@@ -4,6 +4,7 @@ import json
 import math
 import re
 import zlib
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -11,6 +12,7 @@ import numpy as np
 from PIL import Image
 
 from fabrid import runio
+from fabrid.folds import FOLDS, assign_folds, pool_names
 from fabrid.geometry import rasterize
 from fabrid.labels import CLASSES, load_index
 from fabrid.metrics import cldice, mask_iou, size_bucket, tolerant_iou
@@ -24,6 +26,7 @@ RUN_NAME = re.compile(r"^(?P<model>.+)_(?P<arm>session|random)_seed\d+$")
 DEFAULT_ROOTS = ("/kaggle/working/runs", "/kaggle/input")
 COMPARED = {"ap50": "mask_ap50", "tolerant_ap50": "tolerant_ap50"}
 COMPARISON_FIELDS = ("baseline", "candidate", "difference", "low", "high", "verdict")
+SIDES = ("baseline", "candidate")
 
 
 @dataclass
@@ -745,6 +748,126 @@ def compare(comparison: dict, found: dict[str, dict], config: dict) -> dict:
     }
 
 
+def fold_names(run: str) -> list[str]:
+    return [f"{run}_fold{k}" for k in range(FOLDS)]
+
+
+def interval_verdict(low, high) -> str:
+    if low is not None and low > 0:
+        return "higher"
+    if high is not None and high < 0:
+        return "lower"
+    return "not shown"
+
+
+def merge_scored(parts) -> tuple[Scored, list[str]]:
+    names = [name for _, part in parts for name in part]
+    twice = sorted(name for name, count in Counter(names).items() if count > 1)
+    if twice:
+        raise ValueError(f"images covered by more than one fold: {twice[:5]}")
+    union = sorted(names)
+    position = {name: index for index, name in enumerate(union)}
+    fields = {}
+    for name, kind in (*PRED_COLUMNS, *GT_COLUMNS):
+        arrays = []
+        for scored, part in parts:
+            values = getattr(scored, name)
+            if name in ("pred_image", "gt_image"):
+                values = np.array([position[n] for n in part], dtype=int)[values]
+            arrays.append(np.asarray(values, dtype=kind))
+        fields[name] = np.concatenate(arrays) if arrays else np.zeros(0, dtype=kind)
+    return Scored(**fields, n_images=len(union)), union
+
+
+def fold_ap50(run: dict) -> float:
+    return run["scorer"].evaluate(np.ones(run["scorer"].scored.n_images))["ap50"]
+
+
+def compare_pooled(comparison, found, locked, sessions, config, expected=None) -> dict:
+    name = comparison["name"]
+    folds = {}
+    for side in SIDES:
+        missing = [run for run in fold_names(comparison[side]) if run not in found]
+        if missing:
+            raise ValueError(f"crossval {name}: fold runs missing: {missing}")
+        folds[side] = [found[run] for run in fold_names(comparison[side])]
+    for k in range(FOLDS):
+        first, second = (folds[side][k]["val_names"] for side in SIDES)
+        if first != second:
+            raise ValueError(f"crossval {name}: the arms validated different images in fold {k}")
+        if expected is not None and sorted(expected[k]) != first:
+            raise ValueError(f"crossval {name}: fold {k} differs from the fold assignment")
+    pool = pool_names(locked)
+    scorers = {}
+    for side in SIDES:
+        scored, union = merge_scored([(r["scorer"].scored, r["val_names"]) for r in folds[side]])
+        if union != pool:
+            gap = sorted(set(pool) ^ set(union))
+            raise ValueError(f"crossval {name}: {side} folds do not cover the pool, e.g. {gap[:5]}")
+        scorers[side] = Scorer(scored)
+    image_sessions = np.array([sessions[n] for n in pool])
+    weights = draws(image_sessions, config["resamples"], config["seed"], f"crossval_{name}")
+    table = paired(scorers["baseline"], scorers["candidate"], weights)
+    for entry in table.values():
+        entry["verdict"] = interval_verdict(entry["low"], entry["high"])
+    metrics = {
+        COMPARED[metric]: {
+            "mean": table[metric],
+            "per_class": {c: table[f"{metric}/{c}"] for c in CLASSES},
+        }
+        for metric in COMPARED
+    }
+    per_fold = []
+    for k in range(FOLDS):
+        first, second = (folds[side][k] for side in SIDES)
+        a, b = (fold_ap50(run) for run in (first, second))
+        per_fold.append(
+            {
+                "fold": k,
+                "baseline_run": first["run"],
+                "candidate_run": second["run"],
+                "n_val_images": len(first["val_names"]),
+                "n_val_sessions": len(set(first["sessions"].tolist())),
+                "baseline": clean(a),
+                "candidate": clean(b),
+                "difference": clean(b - a),
+            }
+        )
+    return {
+        "name": name,
+        "baseline": comparison["baseline"],
+        "candidate": comparison["candidate"],
+        "folds": FOLDS,
+        "n_val_images": len(pool),
+        "n_val_sessions": len(set(image_sessions.tolist())),
+        "resamples": config["resamples"],
+        "seed": config["seed"],
+        "verdict": table["ap50"]["verdict"],
+        **metrics,
+        "per_fold_mask_ap50": per_fold,
+    }
+
+
+def pooled_rows(result: dict) -> list[list]:
+    rows = comparison_rows(result)
+    for fold in result["per_fold_mask_ap50"]:
+        values = [fold[k] for k in ("baseline", "candidate", "difference")]
+        rows.append(["fold_mask_ap50", fold["fold"], *values, None, None, None])
+    return rows
+
+
+def with_fold_runs(config: dict) -> list[dict]:
+    runs = list(config.get("runs") or [])
+    listed = {run["name"] for run in runs}
+    for comparison in config.get("crossval") or []:
+        for side in SIDES:
+            for run in fold_names(comparison[side]):
+                if run not in listed:
+                    runs.append({"name": run, "step": comparison.get("step", "crossval")})
+                    listed.add(run)
+    return runs
+
+
 def comparison_rows(result: dict) -> list[list]:
     rows = []
     for name in COMPARED.values():
@@ -840,7 +963,7 @@ def main() -> None:
     locked = session_split(records, config["gap_seconds"])
     sessions = assign_sessions(records, config["gap_seconds"])
     results, skipped = [], []
-    for run in config["runs"]:
+    for run in with_fold_runs(config):
         result = evaluate_run(run, records, locked, sessions, config, roots)
         if result is None:
             skipped.append(run["name"])
@@ -889,6 +1012,29 @@ def main() -> None:
             f"[{primary['low']}, {primary['high']}], {result['verdict']}, wrote {compare_dir}"
         )
         written.append(compare_dir)
+    pooled = config.get("crossval") or []
+    expected = None
+    if pooled:
+        folds = assign_folds(records, config["gap_seconds"])
+        expected = [sorted(n for n, k in folds.items() if k == fold) for fold in range(FOLDS)]
+    for comparison in pooled:
+        label = f"crossval_{comparison['name']}"
+        absent = [run for side in SIDES for run in fold_names(comparison[side]) if run not in found]
+        if absent:
+            print(f"{label}: {', '.join(absent)} not evaluated, skipped")
+            continue
+        result = compare_pooled(comparison, found, locked, sessions, config, expected)
+        out_dir = runio.start_run(config["step"], label, {**config, "comparison": comparison})
+        (out_dir / "comparison.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
+        header = ["metric", "class", *COMPARISON_FIELDS]
+        write_csv(out_dir / "comparison.csv", header, pooled_rows(result))
+        primary = result["mask_ap50"]["mean"]
+        print(
+            f"{label}: {comparison['candidate']} minus {comparison['baseline']} pooled mask AP50 "
+            f"{primary['difference']} [{primary['low']}, {primary['high']}] over "
+            f"{result['n_val_images']} images, {result['verdict']}, wrote {out_dir}"
+        )
+        written.append(out_dir)
     print(f"evaluated {len(results)} runs, skipped {len(skipped)}, wrote under {base}")
     if config.get("publish", True):
         for path in written:

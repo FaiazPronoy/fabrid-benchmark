@@ -9,7 +9,7 @@ from fabrid import maskrcnn, runio
 from fabrid.geometry import rasterize
 from fabrid.labels import load_index
 from fabrid.sessions import assign_sessions, session_split
-from fabrid.yolo import arm_mapping, assert_unlocked
+from fabrid.yolo import assert_unlocked
 
 AUG_STREAM = 1
 PASTE_STREAM = 2
@@ -214,11 +214,11 @@ def last_epoch(state: dict, remedies: dict) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
-    config = runio.load_config(parser.parse_args().config)
+    config = maskrcnn.with_fold(runio.load_config(parser.parse_args().config))
     gap = config["gap_seconds"]
     records = load_index()
     locked = session_split(records, gap)
-    mapping = arm_mapping(records, config["arm"], config["seed"], gap)
+    mapping = maskrcnn.view_of(records, config)
     train_records, _ = maskrcnn.split_records(records, mapping, locked)
     transform = build_transform(
         config, train_records, mapping, locked, assign_sessions(records, gap)

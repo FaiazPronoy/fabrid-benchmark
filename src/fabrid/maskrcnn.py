@@ -12,6 +12,7 @@ import numpy as np
 from PIL import Image
 
 from fabrid import runio
+from fabrid.folds import FOLDS, STEP, fold_mapping
 from fabrid.geometry import rasterize
 from fabrid.labels import CLASSES, load_index
 from fabrid.sessions import session_split
@@ -91,6 +92,25 @@ class Samples:
 
 def collate(batch):
     return tuple(zip(*batch, strict=True))
+
+
+def with_fold(config: dict) -> dict:
+    if config.get("fold") is None:
+        return config
+    if config["arm"] != "session" or config["fold"] not in range(FOLDS):
+        raise ValueError(f"fold needs the session arm and a fold from 0 to {FOLDS - 1}")
+    return {**config, "step": STEP}
+
+
+def run_name(config: dict) -> str:
+    name = f"{config['model']}_{config['arm']}_seed{config['seed']}"
+    return name if config.get("fold") is None else f"{name}_fold{config['fold']}"
+
+
+def view_of(records, config: dict) -> dict[str, str]:
+    if config.get("fold") is None:
+        return arm_mapping(records, config["arm"], config["seed"], config["gap_seconds"])
+    return fold_mapping(records, config["gap_seconds"], config["fold"])
 
 
 def split_records(records, mapping: dict[str, str], locked: dict[str, str]):
@@ -543,6 +563,7 @@ def finalize(
         "model": config["model"],
         "arm": config["arm"],
         "seed": config["seed"],
+        **({"fold": config["fold"]} if config.get("fold") is not None else {}),
         "split": "val",
         "endpoint": "val mask AP50 at the best epoch by val mask AP50",
         "best_epoch": best["epoch"],
@@ -563,8 +584,9 @@ def finalize(
 
 
 def run(config: dict, builder=None, extra=None, prepare=None, transform=None) -> None:
+    config = with_fold(config)
     deadline = Deadline(config["hours_limit"])
-    name = f"{config['model']}_{config['arm']}_seed{config['seed']}"
+    name = run_name(config)
     done = runio.repo_root() / "results" / config["step"] / name / "metrics.json"
     if done.is_file():
         print(f"{name}: already complete at {done}, skipping")
@@ -572,7 +594,7 @@ def run(config: dict, builder=None, extra=None, prepare=None, transform=None) ->
     records = load_index()
     print(f"indexed {len(records)} images from {records[0].path.parents[2]}")
     locked = session_split(records, config["gap_seconds"])
-    mapping = arm_mapping(records, config["arm"], config["seed"], config["gap_seconds"])
+    mapping = view_of(records, config)
     train_records, val_records = split_records(records, mapping, locked)
     counts = {"train": instance_counts(train_records), "val": instance_counts(val_records)}
     for split, count in counts.items():

@@ -13,18 +13,37 @@ def line(class_id: int) -> str:
     return f"{class_id}{SQUARE[1:]}"
 
 
+VAL = (
+    ("a", [0, 1]),
+    ("b", [0]),
+    ("c", [0]),
+    ("d", [1]),
+    ("e", [1]),
+    ("f", [1]),
+    ("g", [2]),
+    ("i", [2]),
+    ("j", [2]),
+    ("k", [3]),
+    ("l", [3]),
+    ("m", [3]),
+    ("n", []),
+    ("o", []),
+    ("p", []),
+    ("q", [0]),
+)
+
+
+def image_name(index: int, key: str) -> str:
+    return f"IMG_20260501_09{index:02d}00_jpg.rf.{key}.jpg"
+
+
 def synthetic(tmp_path):
     items = [
-        ("train", "IMG_20260501_080000_jpg.rf.t.jpg", [line(c) for c in range(4)], 1),
-        ("train", "IMG_20260501_090000_jpg.rf.a.jpg", [line(0), line(1)], 2),
-        ("train", "IMG_20260501_090100_jpg.rf.b.jpg", [line(1)], 3),
-        ("train", "IMG_20260501_090200_jpg.rf.c.jpg", [line(2)], 4),
-        ("train", "IMG_20260501_090300_jpg.rf.d.jpg", [line(3), line(3)], 5),
-        ("train", "IMG_20260501_090400_jpg.rf.e.jpg", [], 6),
-        ("train", "IMG_20260501_090500_jpg.rf.f.jpg", [], 7),
-        ("train", "IMG_20260501_090600_jpg.rf.g.jpg", [], 8),
-        ("train", "IMG_20260501_070000_jpg.rf.h.jpg", [line(2)], 9),
+        ("train", image_name(i, key), [line(c) for c in classes], i + 1)
+        for i, (key, classes) in enumerate(VAL)
     ]
+    items.append(("train", "IMG_20260501_080000_jpg.rf.t.jpg", [line(c) for c in range(4)], 90))
+    items.append(("train", "IMG_20260501_070000_jpg.rf.h.jpg", [line(2)], 91))
     records = load_index(make_dataset(tmp_path / "data", items))
     locked = {r.name: "val" for r in records}
     locked["IMG_20260501_080000_jpg.rf.t.jpg"] = "test"
@@ -32,35 +51,59 @@ def synthetic(tmp_path):
     return records, locked
 
 
-def test_selection_covers_classes_and_skips_locked(tmp_path):
+def keys(chosen) -> list[str]:
+    return [r.name.split(".rf.")[1][0] for r in chosen]
+
+
+def inflate(records, key: str) -> None:
+    record = next(r for r in records if f".rf.{key}." in r.name)
+    with record.path.open("ab") as handle:
+        handle.write(b"0" * 50_000)
+
+
+def test_selection_count_order_and_no_reuse(tmp_path):
     records, locked = synthetic(tmp_path)
-    chosen = [r.name for r in reference.select_images(records, locked)]
-    assert chosen == [
-        "IMG_20260501_090000_jpg.rf.a.jpg",
-        "IMG_20260501_090100_jpg.rf.b.jpg",
-        "IMG_20260501_090200_jpg.rf.c.jpg",
-        "IMG_20260501_090300_jpg.rf.d.jpg",
-        "IMG_20260501_090400_jpg.rf.e.jpg",
-        "IMG_20260501_090500_jpg.rf.f.jpg",
-    ]
+    chosen, skipped = reference.select_images(records, locked)
+    assert keys(chosen) == list("abcdefgijklmno")
+    assert len(chosen) == 14
+    assert len({r.name for r in chosen}) == 14
+    assert skipped == []
     shuffled = records[:]
     random.Random(3).shuffle(shuffled)
-    assert [r.name for r in reference.select_images(shuffled, locked)] == chosen
-    classes = [{c for c, _ in r.polygons} for r in reference.select_images(records, locked)[:4]]
-    assert all(k in found for k, found in enumerate(classes))
+    assert reference.select_images(shuffled, locked)[0] == chosen
+    for position, record in enumerate(chosen[:12]):
+        assert position // 3 in {c for c, _ in record.polygons}
+    assert all(r.n_lines == 0 for r in chosen[12:])
+    fewer, _ = reference.select_images(records, locked, per_class=2)
+    assert keys(fewer) == list("abdegiklno")
+
+
+def test_large_images_are_skipped(tmp_path):
+    records, locked = synthetic(tmp_path)
+    inflate(records, "b")
+    inflate(records, "n")
+    chosen, skipped = reference.select_images(records, locked, limit=20_000)
+    assert keys(chosen) == list("acqdefgijklmop")
+    assert [name.split(".rf.")[1][0] for name in skipped] == ["b", "n"]
+    assert all(r.path.stat().st_size <= 20_000 for r in chosen)
 
 
 def test_test_image_refused(tmp_path):
     records, locked = synthetic(tmp_path)
+    chosen, _ = reference.select_images(records, locked)
+    assert "IMG_20260501_080000_jpg.rf.t.jpg" not in {r.name for r in chosen}
+    assert "IMG_20260501_070000_jpg.rf.h.jpg" not in {r.name for r in chosen}
     with pytest.raises(AssertionError, match="val part"):
         reference.refuse_locked(["IMG_20260501_080000_jpg.rf.t.jpg"], locked)
     listed = {r.name: "val" for r in records}
-    listed["IMG_20260501_090200_jpg.rf.c.jpg"] = "train"
+    listed[image_name(2, "c")] = "train"
     with pytest.raises(AssertionError, match="split.csv"):
         reference.select_images(records, locked, listed)
-    no_stain = {**locked, "IMG_20260501_090300_jpg.rf.d.jpg": "test"}
+    no_stain = {**locked, **{image_name(i, k): "test" for i, k in ((9, "k"), (10, "l"))}}
     with pytest.raises(ValueError, match="stain"):
         reference.select_images(records, no_stain)
+    with pytest.raises(ValueError, match="hole"):
+        reference.select_images(records, locked, per_class=4)
 
 
 def test_label_mapping_for_both_kinds():
@@ -73,7 +116,7 @@ def test_label_mapping_for_both_kinds():
 
 def test_json_writer(tmp_path):
     records, locked = synthetic(tmp_path)
-    chosen = reference.select_images(records, locked)
+    chosen, _ = reference.select_images(records, locked)
     mask = np.zeros((32, 32), dtype=bool)
     mask[2:6, 3:8] = True
 

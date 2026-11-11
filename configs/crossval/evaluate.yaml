@@ -1,0 +1,14 @@
+step: evaluation
+gap_seconds: 30
+iou: 0.5
+tolerance_px: 2
+cldice_tol_px: 1
+resamples: 1000
+seed: 0
+roots: [/kaggle/working/runs, /kaggle/input]
+runs: []
+crossval:
+  - name: maskrcnn_aug
+    baseline: maskrcnn_r50_session_seed0
+    candidate: maskrcnn_r50_aug_session_seed0
+publish: true
