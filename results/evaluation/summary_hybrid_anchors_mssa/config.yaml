@@ -61,8 +61,8 @@ config:
     baseline: maskrcnn_r50_session_seed0
     candidate: maskrcnn_r50_aug_paste_session_seed0
   publish: true
-git_commit: 2f70f9243fe1512a23671b1a8fba82d88feab4d1
-git_dirty: false
+git_commit: 81a99f0519574aa1064c6e372ffcf92023df1b35
+git_dirty: true
 versions:
   python: 3.13.18
   fabrid: 0.1.0
@@ -71,7 +71,7 @@ versions:
   pyyaml: 6.0.3
   torch: 2.11.0+cpu
   torchvision: 0.26.0+cpu
-  ultralytics: 8.4.209
+  ultralytics: 8.4.210
   opencv-python: 4.14.0.94
   pycocotools: 2.0.11
   scipy: 1.16.3
@@ -79,4 +79,4 @@ versions:
   timm: 1.0.30
   transformers: 5.20.2
   albumentations: 2.0.8
-started: '2026-11-10T20:49:01+00:00'
+started: '2026-11-11T18:37:59+00:00'
