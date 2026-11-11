@@ -111,3 +111,19 @@ each.
   runs were trained on different accounts. Such a run is not rescored and its files are not
   rewritten. Runs under `results/generalization/` and their comparisons against the parent
   (`protocol/generalization.md`) are added to the config.
+- 2026-11-12, after the single-split `maskrcnn_aug` comparison was seen and before any fold run
+  existed: pooled cross-validation comparisons (`protocol/crossval.md`). The config may list
+  `crossval` comparisons, each naming a baseline and a candidate run; their fold runs
+  `<run>_fold0` to `<run>_fold4` (step crossval) are added to the runs and scored one by one
+  exactly as above, from prediction files or from stored score tables. The evaluator then
+  checks that both arms validated the same images in every fold, that these match the fold
+  assignment of `fabrid.folds`, and that an arm's folds cover every pool image exactly once;
+  any failure stops the comparison. The five scored folds of an arm are joined into one
+  validation set over the pool, with images in name order, and scored as one run. One set of
+  1000 resamples of all pool sessions, from
+  `numpy.random.default_rng([0, crc32("crossval_<name>")])`, rescores both arms; differences,
+  intervals and per class entries are formed as in the paired comparisons above. The verdict
+  here is "higher" if the lower end is above zero, "lower" if the upper end is below zero, else
+  "not shown". Per fold mask AP50 of both arms is listed for reference. Outputs go to
+  `results/evaluation/crossval_<name>/` (`comparison.json`, `comparison.csv`, `config.yaml`).
+  Nothing above this note changes.

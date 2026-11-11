@@ -45,3 +45,14 @@ of the six dataset images. The job also prints, per image, how many detections s
 0.30.
 
 ## Notes
+- 2026-11-12, after the first two packs were written: larger image selection. The first packs
+  held 6 val images and, for the YOLO model, only 2 detections at score 0.30 or more, too few
+  to check an inference app against. The selection now takes, per class in the order of
+  `fabrid.labels.CLASSES`, the first `per_class` val images in sorted file name order that
+  contain the class (config key, default 3), never reusing an image chosen for an earlier
+  class, then the first two val images with an empty label file: 14 images by default. An
+  image file larger than the 200 KB publish limit (`fabrid.runio.IMAGE_LIMIT`) is skipped and
+  the next one is taken, and every skipped file is printed. At the end the job prints the total
+  number of detections at score 0.30 or more over the whole pack, and a warning line if it is
+  under 10. The test lock, prediction settings, minimum score, weights hash and file formats are
+  unchanged. Packs are rebuilt with the new selection.
