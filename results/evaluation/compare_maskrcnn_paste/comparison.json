@@ -1,0 +1,98 @@
+{
+  "name": "maskrcnn_paste",
+  "baseline": "maskrcnn_r50_session_seed0",
+  "candidate": "maskrcnn_r50_paste_session_seed0",
+  "n_val_images": 359,
+  "n_val_sessions": 33,
+  "resamples": 1000,
+  "seed": 0,
+  "verdict": "not shown",
+  "mask_ap50": {
+    "mean": {
+      "baseline": 0.172901,
+      "candidate": 0.199601,
+      "difference": 0.0267,
+      "low": -0.015135,
+      "high": 0.063537,
+      "verdict": "not shown"
+    },
+    "per_class": {
+      "needle mark": {
+        "baseline": 0.118148,
+        "candidate": 0.142354,
+        "difference": 0.024206,
+        "low": -0.050495,
+        "high": 0.078271,
+        "verdict": "not shown"
+      },
+      "hole": {
+        "baseline": 0.383923,
+        "candidate": 0.368536,
+        "difference": -0.015387,
+        "low": -0.110506,
+        "high": 0.09341,
+        "verdict": "not shown"
+      },
+      "missing yarn": {
+        "baseline": 0.089581,
+        "candidate": 0.093415,
+        "difference": 0.003834,
+        "low": -0.070171,
+        "high": 0.068257,
+        "verdict": "not shown"
+      },
+      "stain": {
+        "baseline": 0.099953,
+        "candidate": 0.194101,
+        "difference": 0.094148,
+        "low": 0.002773,
+        "high": 0.17792,
+        "verdict": "higher"
+      }
+    }
+  },
+  "tolerant_ap50": {
+    "mean": {
+      "baseline": 0.226682,
+      "candidate": 0.254127,
+      "difference": 0.027445,
+      "low": -0.020012,
+      "high": 0.074378,
+      "verdict": "not shown"
+    },
+    "per_class": {
+      "needle mark": {
+        "baseline": 0.14701,
+        "candidate": 0.171272,
+        "difference": 0.024262,
+        "low": -0.057285,
+        "high": 0.080556,
+        "verdict": "not shown"
+      },
+      "hole": {
+        "baseline": 0.440039,
+        "candidate": 0.441114,
+        "difference": 0.001076,
+        "low": -0.077307,
+        "high": 0.132209,
+        "verdict": "not shown"
+      },
+      "missing yarn": {
+        "baseline": 0.19384,
+        "candidate": 0.158355,
+        "difference": -0.035485,
+        "low": -0.122561,
+        "high": 0.03338,
+        "verdict": "not shown"
+      },
+      "stain": {
+        "baseline": 0.125838,
+        "candidate": 0.245765,
+        "difference": 0.119927,
+        "low": 0.002773,
+        "high": 0.223423,
+        "verdict": "higher"
+      }
+    }
+  }
+}
