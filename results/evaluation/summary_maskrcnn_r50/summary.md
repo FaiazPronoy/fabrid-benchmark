@@ -10,4 +10,4 @@ Validation only, one evaluator for every run. Intervals: 95% session bootstrap.
 
 No model has both arms evaluated.
 
-Runs listed but not found: maskrcnn_r50_aug_session_seed0, maskrcnn_r50_paste_session_seed0, maskrcnn_r50_aug_paste_session_seed0.
+Runs listed but not found: maskrcnn_r50_aug_session_seed0, maskrcnn_r50_paste_session_seed0.
