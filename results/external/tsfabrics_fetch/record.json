@@ -1,0 +1,23 @@
+{
+  "id": 29573381,
+  "title": "TSFabrics: A Time-Series Fabric Dataset for Real-Time Defect Detection on Circular Knitting Machines",
+  "doi": "10.6084/m9.figshare.29573381.v1",
+  "version": 1,
+  "license": {
+    "value": 52,
+    "name": "CC BY",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "published_date": "2026-03-17T07:01:16Z",
+  "url_public_html": "https://springernature.figshare.com/articles/dataset/TSFabrics_A_Time-Series_Fabric_Dataset_for_Real-Time_Defect_Detection_on_Circular_Knitting_Machines/29573381",
+  "files": [
+    {
+      "name": "TSfabrics.zip",
+      "size": 9187191764,
+      "md5": "0ec5124111b17234b41f529983eb4e98",
+      "supplied_md5": "0ec5124111b17234b41f529983eb4e98",
+      "url": "https://ndownloader.figshare.com/files/59998607",
+      "md5_verified": true
+    }
+  ]
+}
