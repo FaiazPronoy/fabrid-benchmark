@@ -63,7 +63,7 @@ config:
     candidate: maskrcnn_r50_aug_paste_session_seed0
   publish: true
   comparison: *id001
-git_commit: 2f70f9243fe1512a23671b1a8fba82d88feab4d1
+git_commit: 707a698add3827c39a84f9d67e23dd65d0868921
 git_dirty: true
 versions:
   python: 3.13.18
@@ -73,7 +73,7 @@ versions:
   pyyaml: 6.0.3
   torch: 2.11.0+cpu
   torchvision: 0.26.0+cpu
-  ultralytics: 8.4.209
+  ultralytics: 8.4.210
   opencv-python: 4.14.0.94
   pycocotools: 2.0.11
   scipy: 1.16.3
@@ -81,4 +81,4 @@ versions:
   timm: 1.0.30
   transformers: 5.20.2
   albumentations: 2.0.8
-started: '2026-11-10T20:49:10+00:00'
+started: '2026-11-11T08:37:01+00:00'
