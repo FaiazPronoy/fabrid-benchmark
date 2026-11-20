@@ -50,7 +50,15 @@ if process.wait() != 0:
 """
 
 
-def notebook(job: str) -> dict:
+def inputs_text(inputs: str, jobs) -> str:
+    named = [
+        f"the output of the `{name}` notebook" if name in jobs else f"the dataset `{name}`"
+        for name in inputs.split()
+    ]
+    return "Kaggle inputs to add before running: " + ", ".join(named) + "."
+
+
+def notebook(job: str, inputs: str = "", jobs=()) -> dict:
     cell = {
         "cell_type": "code",
         "execution_count": None,
@@ -62,15 +70,21 @@ def notebook(job: str) -> dict:
         "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
         "language_info": {"name": "python"},
     }
-    return {"cells": [cell], "metadata": metadata, "nbformat": 4, "nbformat_minor": 5}
+    cells = [cell]
+    if inputs.strip():
+        text = inputs_text(inputs, jobs)
+        cells.insert(0, {"cell_type": "markdown", "metadata": {}, "source": [text]})
+    return {"cells": cells, "metadata": metadata, "nbformat": 4, "nbformat_minor": 5}
 
 
 def main() -> None:
     out_dir = HERE / "notebooks"
     out_dir.mkdir(exist_ok=True)
-    for job in load_jobs():
+    jobs = load_jobs()
+    for job, row in jobs.items():
         path = out_dir / f"{job}.ipynb"
-        path.write_text(json.dumps(notebook(job), indent=1) + "\n", encoding="utf-8")
+        content = json.dumps(notebook(job, row["inputs"] or "", jobs), indent=1) + "\n"
+        path.write_text(content, encoding="utf-8", newline="\n")
         print(f"wrote {path}")
 
 

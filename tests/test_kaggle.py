@@ -27,11 +27,16 @@ def test_every_job_names_an_existing_module_and_config():
 def test_every_job_has_a_matching_notebook():
     import notebooks
 
-    for job in jobs():
+    listed = {job["job"]: job for job in jobs()}
+    for job in listed.values():
         path = ROOT / "kaggle" / "notebooks" / f"{job['job']}.ipynb"
         stored = json.loads(path.read_text(encoding="utf-8"))
-        assert stored == notebooks.notebook(job["job"])
-        source = "".join(stored["cells"][0]["source"])
+        assert stored == notebooks.notebook(job["job"], job["inputs"], listed)
+        if job["inputs"]:
+            assert stored["cells"][0]["cell_type"] == "markdown"
+            text = "".join(stored["cells"][0]["source"])
+            assert all(f"`{name}`" in text for name in job["inputs"].split())
+        source = "".join(stored["cells"][-1]["source"])
         compile(source, str(path), "exec")
         assert f'\nJOB = "{job["job"]}"\n' in source
         assert 'os.environ["PYTHONUNBUFFERED"] = "1"' in source

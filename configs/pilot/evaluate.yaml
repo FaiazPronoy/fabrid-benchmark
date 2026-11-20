@@ -1,0 +1,18 @@
+step: pilot
+name: evaluation
+fabrics: configs/pilot/fabrics.csv
+roots: [/kaggle/input, /kaggle/working/fabrid-benchmark]
+arms: [pilot_old, pilot_new, pilot_merged]
+comparisons:
+  - name: new_vs_old
+    baseline: pilot_old
+    candidate: pilot_new
+  - name: merged_vs_old
+    baseline: pilot_old
+    candidate: pilot_merged
+  - name: merged_vs_new
+    baseline: pilot_new
+    candidate: pilot_merged
+resamples: 2000
+seed: 0
+publish: true

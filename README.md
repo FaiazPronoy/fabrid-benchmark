@@ -15,6 +15,10 @@ writes small citable results with their exact config to `results/`. Data is read
 4. Mask R-CNN baseline: `python -m fabrid.maskrcnn --config configs/maskrcnn_r50.yaml`
 5. Geometry study: `python -m fabrid.geometry --config configs/geometry.yaml`
 6. Similarity audit of the export, random and session splits: `python -m fabrid.similarity --config configs/similarity.yaml`
+7. Pilot on new fabrics (`protocol/pilot.md`, configs in `configs/pilot/`): Kaggle jobs
+   `pilot_prep`, `pilot_old`, `pilot_new` and `pilot_merged`, then `pilot_evaluate` with the
+   three arm notebooks added as inputs. Kaggle inputs are found by name under `FABRID_INPUT`
+   (default `/kaggle/input`).
 
 On Kaggle, import the notebook of the job from `kaggle/notebooks/` (one per row of
 `kaggle/jobs.csv`, rebuilt with `python kaggle/notebooks.py`), attach the dataset, and add the

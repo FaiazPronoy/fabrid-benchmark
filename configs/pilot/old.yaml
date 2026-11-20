@@ -1,0 +1,23 @@
+step: pilot
+name: pilot_old
+new_data: fabrid-new
+fabrics: configs/pilot/fabrics.csv
+needle_link: 0.05
+needle_min_width: 0.006
+val_share: 0.15
+val_block: 10
+split_seed: 0
+gap_seconds: 30
+weights_data: fabrid-weights
+weights_file: yolov8m_seg_aug.pt
+device: cpu
+predict:
+  imgsz: 640
+  conf: 0.001
+  iou: 0.7
+  max_det: 100
+  retina_masks: true
+iou: 0.5
+tolerance_px: 2
+cldice_tol_px: 1
+publish: true

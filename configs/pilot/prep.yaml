@@ -1,0 +1,13 @@
+step: pilot
+name: prep
+new_data: fabrid-new
+old_data: fabrid-v9
+fabrics: configs/pilot/fabrics.csv
+needle_link: 0.05
+needle_min_width: 0.006
+val_share: 0.15
+val_block: 10
+split_seed: 0
+gap_seconds: 30
+sheet_limit: 24
+publish: true

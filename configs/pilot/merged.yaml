@@ -1,0 +1,39 @@
+step: pilot
+name: pilot_merged
+train_on: pilot_merged
+new_data: fabrid-new
+fabrics: configs/pilot/fabrics.csv
+needle_link: 0.05
+needle_min_width: 0.006
+val_share: 0.15
+val_block: 10
+split_seed: 0
+gap_seconds: 30
+old_data: fabrid-v9
+model: yolov8m
+weights: yolov8m-seg.pt
+seed: 0
+imgsz: 640
+batch: 16
+epochs: 100
+patience: 20
+workers: 4
+device: 0
+hours_limit: 10.5
+train_args:
+  degrees: 15
+  scale: 0.5
+  hsv_v: 0.6
+  hsv_s: 0.8
+  flipud: 0.5
+  copy_paste: 0.5
+predict:
+  imgsz: 640
+  conf: 0.001
+  iou: 0.7
+  max_det: 100
+  retina_masks: true
+iou: 0.5
+tolerance_px: 2
+cldice_tol_px: 1
+publish: true

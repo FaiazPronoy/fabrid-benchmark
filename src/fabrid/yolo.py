@@ -168,12 +168,14 @@ def resumable_epoch(path: Path) -> int | None:
     return int(epoch)
 
 
-def find_checkpoint(name: str, roots, epoch_of=resumable_epoch) -> Path | None:
+def find_checkpoint(
+    name: str, roots, epoch_of=resumable_epoch, step: str = "baselines"
+) -> Path | None:
     found = []
     for root in roots:
         if not Path(root).is_dir():
             continue
-        for path in Path(root).glob(f"**/baselines/{name}/train/weights/*.pt"):
+        for path in Path(root).glob(f"**/{step}/{name}/train/weights/*.pt"):
             if path.name not in ("last.pt", "resume.pt"):
                 continue
             epoch = epoch_of(path)
@@ -182,11 +184,11 @@ def find_checkpoint(name: str, roots, epoch_of=resumable_epoch) -> Path | None:
     return max(found, key=lambda item: item[:2])[2] if found else None
 
 
-def find_finished(name: str, roots) -> Path | None:
+def find_finished(name: str, roots, step: str = "baselines") -> Path | None:
     for root in roots:
         if not Path(root).is_dir():
             continue
-        for marker in sorted(Path(root).glob(f"**/baselines/{name}/train/finished.json")):
+        for marker in sorted(Path(root).glob(f"**/{step}/{name}/train/finished.json")):
             if (marker.parent / "weights" / "best.pt").is_file():
                 return marker.parent
     return None
@@ -222,12 +224,12 @@ def train(config: dict, name: str, data_yaml: Path, deadline: Deadline) -> str:
     runs = runio.runs_dir(config["step"], name)
     train_dir = runs / "train"
     roots = [runs.parent.parent, INPUT_ROOT]
-    finished = find_finished(name, roots)
+    finished = find_finished(name, roots, step=config["step"])
     if finished is not None:
         adopt(train_dir, finished)
         print(f"{name}: training already finished in {finished}, reusing it")
         return "finished"
-    checkpoint = find_checkpoint(name, roots)
+    checkpoint = find_checkpoint(name, roots, step=config["step"])
     state = {"paused": False}
 
     def on_fit_epoch_end(trainer):
