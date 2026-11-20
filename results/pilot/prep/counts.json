@@ -1,0 +1,58 @@
+{
+  "new_images_used": 520,
+  "pilot_test": 93,
+  "pilot_test_fabrics": {
+    "black_white_check": 13,
+    "blue_check": 16,
+    "maroon_floral": 11,
+    "olive": 21,
+    "royal_blue": 32
+  },
+  "training_pool": 427,
+  "val_block": 10,
+  "val_share": 0.15,
+  "split_seed": 0,
+  "blocks": 43,
+  "val_blocks": 6,
+  "pilot_new": {
+    "new": {
+      "train": 367,
+      "val": 60
+    },
+    "old": {
+      "train": 0,
+      "val": 0
+    }
+  },
+  "pilot_merged": {
+    "new": {
+      "train": 367,
+      "val": 60
+    },
+    "old": {
+      "train": 1672,
+      "val": 359
+    }
+  },
+  "needle": {
+    "images_with_needle_marks": 81,
+    "polygons_before": 1104,
+    "polygons_after": 165,
+    "clusters_merged": 102,
+    "images_changed": 76
+  },
+  "instances_after_merge": {
+    "train": {
+      "needle mark": 125,
+      "hole": 183,
+      "missing yarn": 125,
+      "stain": 118
+    },
+    "test": {
+      "needle mark": 40,
+      "hole": 38,
+      "missing yarn": 24,
+      "stain": 32
+    }
+  }
+}
