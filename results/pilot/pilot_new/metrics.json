@@ -1,0 +1,37 @@
+{
+  "arm": "pilot_new",
+  "trained_on": "pilot_new",
+  "weights": "/kaggle/working/runs/pilot/pilot_new/train/weights/best.pt",
+  "weights_sha256": "981e3355e84bdaf48d386d7d7c6a10779da351824edbe411f25e68f136c6430f",
+  "best_epoch": 69,
+  "epochs_run": 89,
+  "n_test_images": 93,
+  "n_test_fabrics": 5,
+  "n_predictions": 5194,
+  "gt_instances": {
+    "needle mark": 40,
+    "hole": 38,
+    "missing yarn": 24,
+    "stain": 32
+  },
+  "gt_without_pixels": 0,
+  "mask_ap50": {
+    "mean": 0.293466,
+    "per_class": {
+      "needle mark": 0.184089,
+      "hole": 0.501846,
+      "missing yarn": 0.149408,
+      "stain": 0.338522
+    }
+  },
+  "box_ap50": {
+    "mean": 0.299694,
+    "per_class": {
+      "needle mark": 0.201198,
+      "hole": 0.537049,
+      "missing yarn": 0.114363,
+      "stain": 0.346164
+    }
+  },
+  "note": "point values only; intervals are computed by the pilot evaluation step"
+}
