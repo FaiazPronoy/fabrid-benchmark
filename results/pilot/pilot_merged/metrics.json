@@ -1,0 +1,37 @@
+{
+  "arm": "pilot_merged",
+  "trained_on": "pilot_merged",
+  "weights": "/kaggle/working/runs/pilot/pilot_merged/train/weights/best.pt",
+  "weights_sha256": "6b4dd45db908a676bd4044786b493eb2f21fb41b120dd277b0251b2d03cc204e",
+  "best_epoch": 99,
+  "epochs_run": 100,
+  "n_test_images": 93,
+  "n_test_fabrics": 5,
+  "n_predictions": 4217,
+  "gt_instances": {
+    "needle mark": 40,
+    "hole": 38,
+    "missing yarn": 24,
+    "stain": 32
+  },
+  "gt_without_pixels": 0,
+  "mask_ap50": {
+    "mean": 0.325875,
+    "per_class": {
+      "needle mark": 0.313958,
+      "hole": 0.481064,
+      "missing yarn": 0.153128,
+      "stain": 0.355351
+    }
+  },
+  "box_ap50": {
+    "mean": 0.350586,
+    "per_class": {
+      "needle mark": 0.330026,
+      "hole": 0.492304,
+      "missing yarn": 0.217873,
+      "stain": 0.36214
+    }
+  },
+  "note": "point values only; intervals are computed by the pilot evaluation step"
+}
