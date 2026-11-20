@@ -1,0 +1,35 @@
+{
+  "arm": "pilot_old",
+  "trained_on": null,
+  "weights": "/kaggle/input/datasets/faiazabrarzaman/fabrid-weights/yolov8m_seg_aug.pt",
+  "weights_sha256": "c494de8e36a177302ec9c66683d24fe6b52ecf42fbec059960d8604a88605d8a",
+  "n_test_images": 93,
+  "n_test_fabrics": 5,
+  "n_predictions": 4322,
+  "gt_instances": {
+    "needle mark": 40,
+    "hole": 38,
+    "missing yarn": 24,
+    "stain": 32
+  },
+  "gt_without_pixels": 0,
+  "mask_ap50": {
+    "mean": 0.133021,
+    "per_class": {
+      "needle mark": 0.030524,
+      "hole": 0.170023,
+      "missing yarn": 0.119055,
+      "stain": 0.212483
+    }
+  },
+  "box_ap50": {
+    "mean": 0.133838,
+    "per_class": {
+      "needle mark": 0.025849,
+      "hole": 0.180764,
+      "missing yarn": 0.116256,
+      "stain": 0.212483
+    }
+  },
+  "note": "point values only; intervals are computed by the pilot evaluation step"
+}
