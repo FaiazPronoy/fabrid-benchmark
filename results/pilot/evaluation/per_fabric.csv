@@ -1,0 +1,16 @@
+arm,fabric,images,gt,mask_ap50,mask_low,mask_high
+pilot_old,black_white_check,13,27,0.257105,0.064505,0.529921
+pilot_old,blue_check,16,18,0.064208,0.0,0.168317
+pilot_old,maroon_floral,11,18,0.077842,0.01592,0.437642
+pilot_old,olive,21,28,0.38047,0.204272,0.5
+pilot_old,royal_blue,32,43,0.230399,0.111503,0.411732
+pilot_new,black_white_check,13,27,0.322939,0.137743,0.629453
+pilot_new,blue_check,16,18,0.518317,0.270943,0.935272
+pilot_new,maroon_floral,11,18,0.090289,0.019427,0.259238
+pilot_new,olive,21,28,0.347098,0.189074,0.541257
+pilot_new,royal_blue,32,43,0.41239,0.272209,0.652991
+pilot_merged,black_white_check,13,27,0.459262,0.31953,0.778642
+pilot_merged,blue_check,16,18,0.325495,0.054455,0.74276
+pilot_merged,maroon_floral,11,18,0.300515,0.140062,0.764533
+pilot_merged,olive,21,28,0.373762,0.188119,0.5
+pilot_merged,royal_blue,32,43,0.48723,0.348618,0.732726

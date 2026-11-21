@@ -1,0 +1,199 @@
+{
+  "n_test_images": 93,
+  "test_fabrics": {
+    "black_white_check": 13,
+    "blue_check": 16,
+    "maroon_floral": 11,
+    "olive": 21,
+    "royal_blue": 32
+  },
+  "resamples": 2000,
+  "seed": 0,
+  "interval": "Intervals are 95% bootstraps over the pilot test images, which come from only 5 fabrics; they do not describe variation between fabrics.",
+  "endpoint": "mask AP50 over the four classes on the pilot test",
+  "arms": {
+    "pilot_old": {
+      "source": "/kaggle/working/fabrid-benchmark/results/pilot/pilot_old",
+      "mask_ap50": {
+        "mean": {
+          "value": 0.133021,
+          "low": 0.080934,
+          "high": 0.236018
+        },
+        "per_class": {
+          "needle mark": {
+            "value": 0.030524,
+            "low": 0.005237,
+            "high": 0.131628
+          },
+          "hole": {
+            "value": 0.170023,
+            "low": 0.064315,
+            "high": 0.327347
+          },
+          "missing yarn": {
+            "value": 0.119055,
+            "low": 0.009671,
+            "high": 0.4385
+          },
+          "stain": {
+            "value": 0.212483,
+            "low": 0.08227,
+            "high": 0.420812
+          }
+        }
+      },
+      "box_ap50": {
+        "mean": {
+          "value": 0.133838,
+          "low": 0.080728,
+          "high": 0.235271
+        },
+        "per_class": {
+          "needle mark": {
+            "value": 0.025849,
+            "low": 0.0033,
+            "high": 0.117651
+          },
+          "hole": {
+            "value": 0.180764,
+            "low": 0.072697,
+            "high": 0.33531
+          },
+          "missing yarn": {
+            "value": 0.116256,
+            "low": 0.008776,
+            "high": 0.431771
+          },
+          "stain": {
+            "value": 0.212483,
+            "low": 0.08227,
+            "high": 0.420812
+          }
+        }
+      }
+    },
+    "pilot_new": {
+      "source": "/kaggle/working/fabrid-benchmark/results/pilot/pilot_new",
+      "mask_ap50": {
+        "mean": {
+          "value": 0.293466,
+          "low": 0.223392,
+          "high": 0.395597
+        },
+        "per_class": {
+          "needle mark": {
+            "value": 0.184089,
+            "low": 0.088278,
+            "high": 0.377821
+          },
+          "hole": {
+            "value": 0.501846,
+            "low": 0.30296,
+            "high": 0.688639
+          },
+          "missing yarn": {
+            "value": 0.149408,
+            "low": 0.052348,
+            "high": 0.291645
+          },
+          "stain": {
+            "value": 0.338522,
+            "low": 0.162793,
+            "high": 0.595408
+          }
+        }
+      },
+      "box_ap50": {
+        "mean": {
+          "value": 0.299694,
+          "low": 0.232521,
+          "high": 0.399321
+        },
+        "per_class": {
+          "needle mark": {
+            "value": 0.201198,
+            "low": 0.112962,
+            "high": 0.368682
+          },
+          "hole": {
+            "value": 0.537049,
+            "low": 0.342761,
+            "high": 0.712551
+          },
+          "missing yarn": {
+            "value": 0.114363,
+            "low": 0.021881,
+            "high": 0.28396
+          },
+          "stain": {
+            "value": 0.346164,
+            "low": 0.172456,
+            "high": 0.595415
+          }
+        }
+      }
+    },
+    "pilot_merged": {
+      "source": "/kaggle/working/fabrid-benchmark/results/pilot/pilot_merged",
+      "mask_ap50": {
+        "mean": {
+          "value": 0.325875,
+          "low": 0.251524,
+          "high": 0.444911
+        },
+        "per_class": {
+          "needle mark": {
+            "value": 0.313958,
+            "low": 0.141986,
+            "high": 0.554558
+          },
+          "hole": {
+            "value": 0.481064,
+            "low": 0.290712,
+            "high": 0.673805
+          },
+          "missing yarn": {
+            "value": 0.153128,
+            "low": 0.046553,
+            "high": 0.414558
+          },
+          "stain": {
+            "value": 0.355351,
+            "low": 0.175484,
+            "high": 0.603055
+          }
+        }
+      },
+      "box_ap50": {
+        "mean": {
+          "value": 0.350586,
+          "low": 0.276142,
+          "high": 0.467346
+        },
+        "per_class": {
+          "needle mark": {
+            "value": 0.330026,
+            "low": 0.176387,
+            "high": 0.539521
+          },
+          "hole": {
+            "value": 0.492304,
+            "low": 0.304146,
+            "high": 0.683724
+          },
+          "missing yarn": {
+            "value": 0.217873,
+            "low": 0.082537,
+            "high": 0.493845
+          },
+          "stain": {
+            "value": 0.36214,
+            "low": 0.17816,
+            "high": 0.604894
+          }
+        }
+      }
+    }
+  }
+}

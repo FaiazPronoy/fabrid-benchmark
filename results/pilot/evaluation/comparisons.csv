@@ -1,0 +1,31 @@
+comparison,candidate,baseline,metric,class,baseline_value,candidate_value,difference,low,high,verdict
+new_vs_old,pilot_new,pilot_old,mask_ap50,mean,0.133021,0.293466,0.160445,0.063625,0.236097,better on new fabrics
+new_vs_old,pilot_new,pilot_old,mask_ap50,needle mark,0.030524,0.184089,0.153565,0.064331,0.314444,better on new fabrics
+new_vs_old,pilot_new,pilot_old,mask_ap50,hole,0.170023,0.501846,0.331823,0.137033,0.481839,better on new fabrics
+new_vs_old,pilot_new,pilot_old,mask_ap50,missing yarn,0.119055,0.149408,0.030352,-0.274446,0.185534,not shown
+new_vs_old,pilot_new,pilot_old,mask_ap50,stain,0.212483,0.338522,0.126038,0.02905,0.268964,better on new fabrics
+new_vs_old,pilot_new,pilot_old,box_ap50,mean,0.133838,0.299694,0.165855,0.072016,0.243143,better on new fabrics
+new_vs_old,pilot_new,pilot_old,box_ap50,needle mark,0.025849,0.201198,0.175349,0.089648,0.321719,better on new fabrics
+new_vs_old,pilot_new,pilot_old,box_ap50,hole,0.180764,0.537049,0.356285,0.163116,0.505114,better on new fabrics
+new_vs_old,pilot_new,pilot_old,box_ap50,missing yarn,0.116256,0.114363,-0.001893,-0.290352,0.182105,not shown
+new_vs_old,pilot_new,pilot_old,box_ap50,stain,0.212483,0.346164,0.133681,0.037136,0.27232,better on new fabrics
+merged_vs_old,pilot_merged,pilot_old,mask_ap50,mean,0.133021,0.325875,0.192854,0.112845,0.279088,better on new fabrics
+merged_vs_old,pilot_merged,pilot_old,mask_ap50,needle mark,0.030524,0.313958,0.283434,0.112383,0.506499,better on new fabrics
+merged_vs_old,pilot_merged,pilot_old,mask_ap50,hole,0.170023,0.481064,0.311041,0.156161,0.455834,better on new fabrics
+merged_vs_old,pilot_merged,pilot_old,mask_ap50,missing yarn,0.119055,0.153128,0.034072,-0.150981,0.221641,not shown
+merged_vs_old,pilot_merged,pilot_old,mask_ap50,stain,0.212483,0.355351,0.142867,0.039599,0.275186,better on new fabrics
+merged_vs_old,pilot_merged,pilot_old,box_ap50,mean,0.133838,0.350586,0.216748,0.134466,0.304664,better on new fabrics
+merged_vs_old,pilot_merged,pilot_old,box_ap50,needle mark,0.025849,0.330026,0.304177,0.139684,0.508563,better on new fabrics
+merged_vs_old,pilot_merged,pilot_old,box_ap50,hole,0.180764,0.492304,0.31154,0.163187,0.450505,better on new fabrics
+merged_vs_old,pilot_merged,pilot_old,box_ap50,missing yarn,0.116256,0.217873,0.101617,-0.108629,0.320386,not shown
+merged_vs_old,pilot_merged,pilot_old,box_ap50,stain,0.212483,0.36214,0.149657,0.040734,0.287758,better on new fabrics
+merged_vs_new,pilot_merged,pilot_new,mask_ap50,mean,0.293466,0.325875,0.032409,-0.028325,0.117271,not shown
+merged_vs_new,pilot_merged,pilot_new,mask_ap50,needle mark,0.184089,0.313958,0.129869,-0.007721,0.265319,not shown
+merged_vs_new,pilot_merged,pilot_new,mask_ap50,hole,0.501846,0.481064,-0.020782,-0.129141,0.123469,not shown
+merged_vs_new,pilot_merged,pilot_new,mask_ap50,missing yarn,0.149408,0.153128,0.00372,-0.131003,0.260095,not shown
+merged_vs_new,pilot_merged,pilot_new,mask_ap50,stain,0.338522,0.355351,0.016829,-0.108782,0.134562,not shown
+merged_vs_new,pilot_merged,pilot_new,box_ap50,mean,0.299694,0.350586,0.050892,-0.017897,0.137609,not shown
+merged_vs_new,pilot_merged,pilot_new,box_ap50,needle mark,0.201198,0.330026,0.128828,-0.001513,0.260821,not shown
+merged_vs_new,pilot_merged,pilot_new,box_ap50,hole,0.537049,0.492304,-0.044745,-0.141186,0.079545,not shown
+merged_vs_new,pilot_merged,pilot_new,box_ap50,missing yarn,0.114363,0.217873,0.10351,-0.076347,0.380182,not shown
+merged_vs_new,pilot_merged,pilot_new,box_ap50,stain,0.346164,0.36214,0.015976,-0.112691,0.142866,not shown

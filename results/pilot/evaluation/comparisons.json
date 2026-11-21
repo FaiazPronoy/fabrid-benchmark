@@ -1,0 +1,298 @@
+{
+  "n_test_images": 93,
+  "test_fabrics": {
+    "black_white_check": 13,
+    "blue_check": 16,
+    "maroon_floral": 11,
+    "olive": 21,
+    "royal_blue": 32
+  },
+  "resamples": 2000,
+  "seed": 0,
+  "interval": "Intervals are 95% bootstraps over the pilot test images, which come from only 5 fabrics; they do not describe variation between fabrics.",
+  "endpoint": "mask AP50 over the four classes on the pilot test",
+  "comparisons": [
+    {
+      "name": "new_vs_old",
+      "baseline": "pilot_old",
+      "candidate": "pilot_new",
+      "mask_ap50": {
+        "mean": {
+          "baseline": 0.133021,
+          "candidate": 0.293466,
+          "difference": 0.160445,
+          "low": 0.063625,
+          "high": 0.236097,
+          "verdict": "better on new fabrics"
+        },
+        "per_class": {
+          "needle mark": {
+            "baseline": 0.030524,
+            "candidate": 0.184089,
+            "difference": 0.153565,
+            "low": 0.064331,
+            "high": 0.314444,
+            "verdict": "better on new fabrics"
+          },
+          "hole": {
+            "baseline": 0.170023,
+            "candidate": 0.501846,
+            "difference": 0.331823,
+            "low": 0.137033,
+            "high": 0.481839,
+            "verdict": "better on new fabrics"
+          },
+          "missing yarn": {
+            "baseline": 0.119055,
+            "candidate": 0.149408,
+            "difference": 0.030352,
+            "low": -0.274446,
+            "high": 0.185534,
+            "verdict": "not shown"
+          },
+          "stain": {
+            "baseline": 0.212483,
+            "candidate": 0.338522,
+            "difference": 0.126038,
+            "low": 0.02905,
+            "high": 0.268964,
+            "verdict": "better on new fabrics"
+          }
+        }
+      },
+      "box_ap50": {
+        "mean": {
+          "baseline": 0.133838,
+          "candidate": 0.299694,
+          "difference": 0.165855,
+          "low": 0.072016,
+          "high": 0.243143,
+          "verdict": "better on new fabrics"
+        },
+        "per_class": {
+          "needle mark": {
+            "baseline": 0.025849,
+            "candidate": 0.201198,
+            "difference": 0.175349,
+            "low": 0.089648,
+            "high": 0.321719,
+            "verdict": "better on new fabrics"
+          },
+          "hole": {
+            "baseline": 0.180764,
+            "candidate": 0.537049,
+            "difference": 0.356285,
+            "low": 0.163116,
+            "high": 0.505114,
+            "verdict": "better on new fabrics"
+          },
+          "missing yarn": {
+            "baseline": 0.116256,
+            "candidate": 0.114363,
+            "difference": -0.001893,
+            "low": -0.290352,
+            "high": 0.182105,
+            "verdict": "not shown"
+          },
+          "stain": {
+            "baseline": 0.212483,
+            "candidate": 0.346164,
+            "difference": 0.133681,
+            "low": 0.037136,
+            "high": 0.27232,
+            "verdict": "better on new fabrics"
+          }
+        }
+      },
+      "verdict": "better on new fabrics"
+    },
+    {
+      "name": "merged_vs_old",
+      "baseline": "pilot_old",
+      "candidate": "pilot_merged",
+      "mask_ap50": {
+        "mean": {
+          "baseline": 0.133021,
+          "candidate": 0.325875,
+          "difference": 0.192854,
+          "low": 0.112845,
+          "high": 0.279088,
+          "verdict": "better on new fabrics"
+        },
+        "per_class": {
+          "needle mark": {
+            "baseline": 0.030524,
+            "candidate": 0.313958,
+            "difference": 0.283434,
+            "low": 0.112383,
+            "high": 0.506499,
+            "verdict": "better on new fabrics"
+          },
+          "hole": {
+            "baseline": 0.170023,
+            "candidate": 0.481064,
+            "difference": 0.311041,
+            "low": 0.156161,
+            "high": 0.455834,
+            "verdict": "better on new fabrics"
+          },
+          "missing yarn": {
+            "baseline": 0.119055,
+            "candidate": 0.153128,
+            "difference": 0.034072,
+            "low": -0.150981,
+            "high": 0.221641,
+            "verdict": "not shown"
+          },
+          "stain": {
+            "baseline": 0.212483,
+            "candidate": 0.355351,
+            "difference": 0.142867,
+            "low": 0.039599,
+            "high": 0.275186,
+            "verdict": "better on new fabrics"
+          }
+        }
+      },
+      "box_ap50": {
+        "mean": {
+          "baseline": 0.133838,
+          "candidate": 0.350586,
+          "difference": 0.216748,
+          "low": 0.134466,
+          "high": 0.304664,
+          "verdict": "better on new fabrics"
+        },
+        "per_class": {
+          "needle mark": {
+            "baseline": 0.025849,
+            "candidate": 0.330026,
+            "difference": 0.304177,
+            "low": 0.139684,
+            "high": 0.508563,
+            "verdict": "better on new fabrics"
+          },
+          "hole": {
+            "baseline": 0.180764,
+            "candidate": 0.492304,
+            "difference": 0.31154,
+            "low": 0.163187,
+            "high": 0.450505,
+            "verdict": "better on new fabrics"
+          },
+          "missing yarn": {
+            "baseline": 0.116256,
+            "candidate": 0.217873,
+            "difference": 0.101617,
+            "low": -0.108629,
+            "high": 0.320386,
+            "verdict": "not shown"
+          },
+          "stain": {
+            "baseline": 0.212483,
+            "candidate": 0.36214,
+            "difference": 0.149657,
+            "low": 0.040734,
+            "high": 0.287758,
+            "verdict": "better on new fabrics"
+          }
+        }
+      },
+      "verdict": "better on new fabrics"
+    },
+    {
+      "name": "merged_vs_new",
+      "baseline": "pilot_new",
+      "candidate": "pilot_merged",
+      "mask_ap50": {
+        "mean": {
+          "baseline": 0.293466,
+          "candidate": 0.325875,
+          "difference": 0.032409,
+          "low": -0.028325,
+          "high": 0.117271,
+          "verdict": "not shown"
+        },
+        "per_class": {
+          "needle mark": {
+            "baseline": 0.184089,
+            "candidate": 0.313958,
+            "difference": 0.129869,
+            "low": -0.007721,
+            "high": 0.265319,
+            "verdict": "not shown"
+          },
+          "hole": {
+            "baseline": 0.501846,
+            "candidate": 0.481064,
+            "difference": -0.020782,
+            "low": -0.129141,
+            "high": 0.123469,
+            "verdict": "not shown"
+          },
+          "missing yarn": {
+            "baseline": 0.149408,
+            "candidate": 0.153128,
+            "difference": 0.00372,
+            "low": -0.131003,
+            "high": 0.260095,
+            "verdict": "not shown"
+          },
+          "stain": {
+            "baseline": 0.338522,
+            "candidate": 0.355351,
+            "difference": 0.016829,
+            "low": -0.108782,
+            "high": 0.134562,
+            "verdict": "not shown"
+          }
+        }
+      },
+      "box_ap50": {
+        "mean": {
+          "baseline": 0.299694,
+          "candidate": 0.350586,
+          "difference": 0.050892,
+          "low": -0.017897,
+          "high": 0.137609,
+          "verdict": "not shown"
+        },
+        "per_class": {
+          "needle mark": {
+            "baseline": 0.201198,
+            "candidate": 0.330026,
+            "difference": 0.128828,
+            "low": -0.001513,
+            "high": 0.260821,
+            "verdict": "not shown"
+          },
+          "hole": {
+            "baseline": 0.537049,
+            "candidate": 0.492304,
+            "difference": -0.044745,
+            "low": -0.141186,
+            "high": 0.079545,
+            "verdict": "not shown"
+          },
+          "missing yarn": {
+            "baseline": 0.114363,
+            "candidate": 0.217873,
+            "difference": 0.10351,
+            "low": -0.076347,
+            "high": 0.380182,
+            "verdict": "not shown"
+          },
+          "stain": {
+            "baseline": 0.346164,
+            "candidate": 0.36214,
+            "difference": 0.015976,
+            "low": -0.112691,
+            "high": 0.142866,
+            "verdict": "not shown"
+          }
+        }
+      },
+      "verdict": "not shown"
+    }
+  ]
+}
